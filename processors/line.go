@@ -90,3 +90,48 @@ func (t *lineProcessorBuilder) Match(k string, patterns ...string) *lineProcesso
 func (t *lineProcessorBuilder) Done() *lineProcessor {
 	return t.processor
 }
+
+/////////////////////////////////////////////////////////////////////
+
+type lineProcessorBuilder2 struct {
+	processor *lineProcessor
+}
+
+func BuildLineProcessor2(name string, key string) *lineProcessorBuilder2 {
+	return &lineProcessorBuilder2{
+		processor: &lineProcessor{
+			name: name,
+			key:  key,
+		},
+	}
+}
+
+func (t *lineProcessorBuilder2) ExtractString(f *string) *lineProcessorBuilder2 {
+	t.processor.extractFns = append(t.processor.extractFns, extractStringFn(t.processor.key, f))
+	return t
+}
+
+func (t *lineProcessorBuilder2) ExtractDate(f *rfc3339date.Rfc3339Date) *lineProcessorBuilder2 {
+	t.processor.extractFns = append(t.processor.extractFns, extractDateFn(t.processor.key, f))
+	return t
+}
+
+func (t *lineProcessorBuilder2) ExtractFloat(f *float32) *lineProcessorBuilder2 {
+	t.processor.extractFns = append(t.processor.extractFns, extractFloatFn(t.processor.key, f))
+	return t
+}
+
+func (t *lineProcessorBuilder2) Clean(fn ...func(string) string) *lineProcessorBuilder2 {
+	t.processor.cleanFns = append(t.processor.cleanFns, cleanFn(t.processor.key, fn...))
+	return t
+}
+
+func (t *lineProcessorBuilder2) Match(patterns ...string) *lineProcessorBuilder2 {
+	t.processor.matchFns = append(t.processor.matchFns, matchFn(t.processor.key, patterns...))
+	t.processor.containFn = containsFn(t.processor.key)
+	return t
+}
+
+func (t *lineProcessorBuilder2) Done() *lineProcessor {
+	return t.processor
+}
