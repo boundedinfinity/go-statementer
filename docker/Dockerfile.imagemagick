@@ -1,0 +1,16 @@
+FROM ubuntu:jammy
+
+# https://tesseract-ocr.github.io/tessdoc/ v5
+# https://hub.docker.com/_/ubuntu
+# https://stackoverflow.com/questions/52998331/imagemagick-security-policy-pdf-blocking-conversion
+
+RUN apt-get update && apt-get install -y imagemagick
+
+# Help for debugging
+RUN apt-get install -y less vim fish
+
+RUN sed -i '/pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
+
+WORKDIR /work
+
+ENTRYPOINT ["convert"]
