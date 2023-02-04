@@ -1,7 +1,5 @@
 github.com/boundedinfinity/go-commoner v1.0.23 h1:6tJpUY2VKwz/M1nzpuR55AHGssffwaOBBerQ8ftJkzM=
 github.com/boundedinfinity/go-commoner v1.0.23/go.mod h1:NtJk5jQO+YEXMZ9T+vTpQE3tCFTz+8Sr/N+ofQi5FSg=
-github.com/boundedinfinity/rfc3339date v1.0.1 h1:TztYOlvDDdqxcO3wLU484Gb2TQrnV2nwrllnZuQyxdM=
-github.com/boundedinfinity/rfc3339date v1.0.1/go.mod h1:kAazYSadaCJGeME4vx1F84637nbjIPy9pguMLFF2/lo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/oriser/regroup v0.0.0-20210730155327-fca8d7531263 h1:Qd1Ml+uEhpesT8Og0ysEhu5+DGhbhW+qxjapH8t1Kvs=
@@ -10,7 +8,7 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.7.4 h1:wZRexSlwd7ZXfKINDLsO4r7WBt3gTKONc6K/VesHvHM=
+github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=

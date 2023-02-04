@@ -7,64 +7,40 @@ import (
 	"github.com/boundedinfinity/docsorter/model"
 )
 
-func GetAccount(path string) (string, error) {
-	var account string
-
-	processor := BuildLineProcessor("Account Number").
-		Match("accunt", accountPattern).
-		Contains("account").
-		Clean("account", accountCleanup...).
-		ExtractString("account", &account).
-		Done()
-
-	if err := Process(path, processor); err != nil {
-		return account, err
+func Descriminator(path string) (model.StatementDiscriminator, error) {
+	statement := model.StatementDiscriminator{
+		Account: "",
 	}
 
-	return account, nil
-}
+	// processor, err := NewProcessor(configs)
 
-func ProcessStatement(path string, account string) (model.CheckingStatement, error) {
-	var statement model.CheckingStatement
+	// if err != nil {
+	// 	return statement, err
+	// }
 
-	accountP := BuildLineProcessor("Account Number").
-		Match("accunt", accountPattern).
-		Contains("account").
-		Clean("account", trimLeading0, removeSpaces).
-		ExtractString("account", &statement.AccountNumber).
-		Done()
-
-	openingBalanceP := BuildLineProcessor("Opening Balance").
-		Match("usd", openingBalancePatterns...).
-		Contains("usd").
-		Clean("usd", usdCleanup...).
-		ExtractFloat("usd", &statement.OpeningBalance).
-		Done()
-
-	closingBalanceP := BuildLineProcessor("Closing Balance").
-		Match("usd", closingBalancePatterns...).
-		Contains("usd").
-		Clean("usd", usdCleanup...).
-		ExtractFloat("usd", &statement.ClosingBalance).
-		Done()
-
-	processor := &StatementProcessor{
-		Name: "Checking Account",
-		processors: []Processor{
-			accountP,
-			openingBalanceP,
-			closingBalanceP,
-		},
-	}
-
-	if err := Process(path, processor); err != nil {
-		return statement, err
-	}
+	// if err := Process(path, processor); err != nil {
+	// 	return statement, err
+	// }
 
 	return statement, nil
 }
 
-func Process(path string, processor Processor) error {
+func ProcessStatement(path string, descriminator model.StatementDiscriminator) (model.CheckingStatementRaw, error) {
+	zero := model.CheckingStatementRaw{}
+	processor, err := lookup(path, descriminator)
+
+	if err != nil {
+		return zero, err
+	}
+
+	if err := Process(path, processor); err != nil {
+		return zero, err
+	}
+
+	return *processor.raw, nil
+}
+
+func Process(path string, processor *StatementProcessor) error {
 	file, err := os.Open(path)
 
 	if err != nil {
@@ -75,7 +51,7 @@ func Process(path string, processor Processor) error {
 
 	scanner := bufio.NewScanner(file)
 
-	for scanner.Scan() && !processor.Completed() {
+	for scanner.Scan() {
 		if err := processor.Process(scanner.Text()); err != nil {
 			return err
 		}
