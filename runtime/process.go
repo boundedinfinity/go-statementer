@@ -13,14 +13,12 @@ func (t *Runtime) Process(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if err := processors.ExtractStatement(t.userConfig, ocr); err != nil {
+	if err := processors.ExtractStatement(t.logger, t.userConfig, ocr); err != nil {
 		return err
 	}
 
-	if t.userConfig.Debug {
-		for _, e := range ocr.Extracted {
-			util.PrintLabeled(e.Name, fmt.Sprintf("%v", e.Values))
-		}
+	for _, e := range ocr.Extracted {
+		t.logger.Debugf(util.PrintLabeled(e.Name, fmt.Sprintf("%v", e.Values)))
 	}
 
 	return nil

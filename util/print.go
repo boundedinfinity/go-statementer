@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-func PrintSep() {
+func PrintSep() string {
 	sep := strings.Repeat("=", 120)
-	fmt.Println(sep)
+	return sep
 }
 
-func PrintLabeled(label string, v string) {
+func PrintLabeled(label string, v string) string {
 	text := fmt.Sprintf("%30v", label)
 	text = fmt.Sprintf("%v: %v", text, v)
-	fmt.Println(text)
+	return text
 }
 
 func PrintLabeleds(label string, vs []string) {

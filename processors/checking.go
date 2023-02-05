@@ -2,9 +2,10 @@ package processors
 
 import (
 	"github.com/boundedinfinity/docsorter/model"
+	"github.com/sirupsen/logrus"
 )
 
-func lookup(userConfig model.UserConfig, ocr *model.OcrContext) (*StatementProcessor, error) {
+func lookup(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext) (*StatementProcessor, error) {
 	// txDescriptor := model.NewLine(
 	// 	"Transaction",
 	// 	`(?P<Date>\d{2}/\d{2})\s+(?P<Memo>.*?)\s+`+usdPattern,
@@ -38,7 +39,7 @@ func lookup(userConfig model.UserConfig, ocr *model.OcrContext) (*StatementProce
 		),
 	}
 
-	processor, err := NewProcessor(userConfig, ocr, descriptor)
+	processor, err := NewProcessor(logger, userConfig, ocr, descriptor)
 
 	if err != nil {
 		return processor, err

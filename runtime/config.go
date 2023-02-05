@@ -6,6 +6,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/environmenter"
 	"github.com/boundedinfinity/go-commoner/extentioner"
 	"github.com/boundedinfinity/go-commoner/slicer"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,6 +22,19 @@ func (t *Runtime) LoadUserConfig(path string) error {
 	}
 
 	t.normalizeUserConfig()
+
+	t.logger.SetFormatter(&logrus.TextFormatter{
+		DisableTimestamp: true,
+	})
+
+	switch t.userConfig.LogLevel {
+	case "info":
+		t.logger.SetLevel(logrus.InfoLevel)
+	case "debug":
+		t.logger.SetLevel(logrus.DebugLevel)
+	case "trace":
+		t.logger.SetLevel(logrus.TraceLevel)
+	}
 
 	return nil
 }

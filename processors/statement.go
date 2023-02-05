@@ -2,23 +2,25 @@ package processors
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/oriser/regroup"
+	"github.com/sirupsen/logrus"
 )
 
 type StatementProcessor struct {
 	Name       string
 	userConfig model.UserConfig
+	logger     *logrus.Logger
 	ocr        *model.OcrContext
 	desc       model.CheckingDescriptor
 }
 
-func NewProcessor(userConfig model.UserConfig, ocr *model.OcrContext, desc model.CheckingDescriptor) (*StatementProcessor, error) {
+func NewProcessor(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext, desc model.CheckingDescriptor) (*StatementProcessor, error) {
 	processor := &StatementProcessor{
 		ocr:        ocr,
 		userConfig: userConfig,
+		logger:     logger,
 	}
 
 	for _, line := range desc.Lines() {
@@ -50,9 +52,7 @@ func NewProcessor(userConfig model.UserConfig, ocr *model.OcrContext, desc model
 
 func (p *StatementProcessor) Extract(line string) error {
 	for _, lineDesc := range p.desc.Lines() {
-		if p.userConfig.Debug {
-			fmt.Printf("%v: on %v\n", lineDesc.Pattern, line)
-		}
+		p.logger.Tracef("%v: on %v\n", lineDesc.Pattern, line)
 
 		groups, err := lineDesc.Regex.Groups(line)
 

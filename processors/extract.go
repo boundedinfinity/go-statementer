@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/docsorter/model"
+	"github.com/sirupsen/logrus"
 )
 
 func Descriminator(ocr *model.OcrContext) error {
@@ -15,8 +16,8 @@ func Descriminator(ocr *model.OcrContext) error {
 	return nil
 }
 
-func ExtractStatement(userConfig model.UserConfig, ocr *model.OcrContext) error {
-	processor, err := lookup(userConfig, ocr)
+func ExtractStatement(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext) error {
+	processor, err := lookup(logger, userConfig, ocr)
 
 	if err != nil {
 		return err

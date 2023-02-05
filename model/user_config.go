@@ -6,11 +6,11 @@ type UserConfig struct {
 	WorkPath    string                `yaml:"workPath"`
 	SumExt      string                `yaml:"sumExt"`
 	InputExt    string                `yaml:"inputExt"`
-	Log         string                `yaml:"log"`
-	Debug       bool                  `yaml:"debug"`
+	LogLevel    string                `yaml:"logLevel"`
 	Reprocess   bool                  `yaml:"reprocess"`
 	IgnorePaths []string              `yaml:"ignorePaths"`
 	Statements  []UserConfigStatement `yaml:"statements"`
+	// Debug       bool                  `yaml:"debug"`
 }
 
 type UserConfigStatement struct {
