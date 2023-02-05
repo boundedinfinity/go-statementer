@@ -2,18 +2,20 @@ package processors
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/go-commoner/stringer"
 	"github.com/boundedinfinity/rfc3339date"
 	"github.com/oriser/regroup"
 )
 
 var (
-	usdPattern             = `(?P<usd>[+-]?\$?[\d,]+\.\d{2})`
-	accountPattern         = `Account\sNumber:\s*(?P<account>[\d\s]+)`
+	usdPattern = `(?P<Amount>[+-]?\$?[\d,]+\.\d{2})`
+	// accountPattern         = `Account\sNumber:\s*(?P<account>[\d\s]+)`
 	openingBalancePatterns = []string{
 		`Previous\sBalance\s+` + usdPattern,
 		`Beginning\sBalance\s+` + usdPattern,
@@ -104,7 +106,7 @@ func cleanFn(key string, fns ...func(string) string) func(map[string]string) {
 	}
 }
 
-func extractStringFn(key string, value *string) func(map[string]string) {
+func extractStringFn(key string, value *string) model.MatchHandler {
 	return func(matches map[string]string) {
 		if v, ok := matches[key]; ok {
 			*value = v
@@ -112,7 +114,7 @@ func extractStringFn(key string, value *string) func(map[string]string) {
 	}
 }
 
-func extractFloatFn(key string, value *float32) func(map[string]string) {
+func extractFloatFn(key string, value *float32) model.MatchHandler {
 	return func(matches map[string]string) {
 		var s string
 		extractStringFn(key, &s)(matches)
@@ -127,7 +129,7 @@ func extractFloatFn(key string, value *float32) func(map[string]string) {
 	}
 }
 
-func extractDateFn(key string, layout string, value *rfc3339date.Rfc3339Date) func(map[string]string) {
+func extractDateFn(key string, layout string, value *rfc3339date.Rfc3339Date) model.MatchHandler {
 	return func(matches map[string]string) {
 		var s string
 		extractStringFn(key, &s)(matches)
@@ -141,4 +143,69 @@ func extractDateFn(key string, layout string, value *rfc3339date.Rfc3339Date) fu
 			}
 		}
 	}
+}
+
+// func createSectionRegex(desc *model.SectionDescriptor) error {
+// 	for _, field := range desc.Start.Fields {
+// 		field.Handlers = append(field.Handlers, func(_ map[string]string) {
+// 			desc.InSection = true
+// 		})
+// 	}
+
+// 	for _, field := range desc.End.Fields {
+// 		field.Handlers = append(field.Handlers, func(_ map[string]string) {
+// 			desc.InSection = false
+// 		})
+// 	}
+
+// 	for i, field := range desc.Line.Fields {
+// 		if i == 0 {
+// 			field.Handlers = append(field.Handlers, func(_ map[string]string) {
+// 				if desc.InSection {
+// 					desc.Matched = append(desc.Matched, *desc.Line.Copy())
+// 				}
+// 			})
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+func validateLineRegex(desc model.LineDescriptor) error {
+	if len(desc.Fields) == 0 {
+		return nil
+	}
+
+	m := make(map[string]bool)
+
+	for _, field := range desc.Fields {
+		m[field.Key] = false
+	}
+
+	re := regexp.MustCompile(`\(\?P<(?P<named>.*?)\>`)
+	foundGroups := re.FindAllStringSubmatch(desc.Pattern, -1)
+
+	for _, foundGroup := range foundGroups {
+		if len(foundGroup) == 2 {
+			for _, field := range desc.Fields {
+				if foundGroup[1] == field.Key {
+					m[field.Key] = true
+				}
+			}
+		}
+	}
+
+	missing := make([]string, 0)
+
+	for name, ok := range m {
+		if !ok {
+			missing = append(missing, name)
+		}
+	}
+
+	if len(missing) > 0 {
+		return fmt.Errorf("missing [%v] from %v", strings.Join(missing, ","), desc.Pattern)
+	}
+
+	return nil
 }

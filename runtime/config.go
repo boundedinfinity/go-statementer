@@ -5,37 +5,40 @@ import (
 
 	"github.com/boundedinfinity/go-commoner/environmenter"
 	"github.com/boundedinfinity/go-commoner/extentioner"
+	"github.com/boundedinfinity/go-commoner/slicer"
 	"gopkg.in/yaml.v3"
 )
 
-func (t *Runtime) LoadConfig(path string) error {
+func (t *Runtime) LoadUserConfig(path string) error {
 	bs, err := os.ReadFile(path)
 
 	if err != nil {
 		return err
 	}
 
-	if err := yaml.Unmarshal(bs, &t.config); err != nil {
+	if err := yaml.Unmarshal(bs, &t.userConfig); err != nil {
 		return err
 	}
 
-	t.normalize()
+	t.normalizeUserConfig()
 
 	return nil
 }
 
-func (t *Runtime) normalize() {
-	t.config.InputPath = environmenter.Sub(t.config.InputPath)
-	t.config.OutputPath = environmenter.Sub(t.config.OutputPath)
-	t.config.WorkPath = environmenter.Sub(t.config.WorkPath)
-	t.config.SumExt = extentioner.Normalize(t.config.SumExt)
-	t.config.InputExt = extentioner.Normalize(t.config.InputExt)
+func (t *Runtime) normalizeUserConfig() {
+	t.userConfig.InputPaths = slicer.Map(t.userConfig.InputPaths, func(path string) string {
+		return environmenter.Sub(path)
+	})
+	t.userConfig.OutputPath = environmenter.Sub(t.userConfig.OutputPath)
+	t.userConfig.WorkPath = environmenter.Sub(t.userConfig.WorkPath)
+	t.userConfig.SumExt = extentioner.Normalize(t.userConfig.SumExt)
+	t.userConfig.InputExt = extentioner.Normalize(t.userConfig.InputExt)
 
-	if t.config.IgnorePaths == nil {
-		t.config.IgnorePaths = make([]string, 0)
+	if t.userConfig.IgnorePaths == nil {
+		t.userConfig.IgnorePaths = make([]string, 0)
 	}
 
-	for _, p := range t.config.IgnorePaths {
-		t.config.IgnorePaths = append(t.config.IgnorePaths, environmenter.Sub(p))
+	for _, p := range t.userConfig.IgnorePaths {
+		t.userConfig.IgnorePaths = append(t.userConfig.IgnorePaths, environmenter.Sub(p))
 	}
 }

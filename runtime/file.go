@@ -1,5 +1,33 @@
 package runtime
 
+import (
+	"github.com/boundedinfinity/docsorter/model"
+	"github.com/boundedinfinity/go-commoner/pather"
+)
+
+func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
+	var ocrs []model.OcrContext
+	allPaths := make([]string, 0)
+
+	for _, path := range t.userConfig.InputPaths {
+		paths, err := pather.GetFiles(path)
+
+		if err != nil {
+			return ocrs, err
+		}
+
+		allPaths = append(allPaths, paths...)
+	}
+
+	for _, path := range allPaths {
+		ocrs = append(ocrs, model.OcrContext{
+			Source: path,
+		})
+	}
+
+	return ocrs, nil
+}
+
 // func move(runtime *Runtime) error {
 // 	for path, desc := range runtime.files {
 // 		if !desc.Classified {

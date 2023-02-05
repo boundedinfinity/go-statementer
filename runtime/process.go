@@ -5,29 +5,23 @@ import (
 
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/processors"
+	"github.com/boundedinfinity/docsorter/util"
 )
 
-func (t *Runtime) Process(path string) error {
-	// descriminator, err := processors.Descriminator(path)
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	descriminator := model.StatementDiscriminator{}
-
-	statement, err := processors.ProcessStatement(path, descriminator)
-
-	if err != nil {
+func (t *Runtime) Process(ocr *model.OcrContext) error {
+	if err := processors.Descriminator(ocr); err != nil {
 		return err
 	}
 
-	// fmt.Printf("               Name: %v\n", sc.Name)
-	fmt.Printf("     Account Number: %v\n", descriminator)
-	fmt.Printf("     Account Number: %v\n", statement.Account)
-	// fmt.Printf("               Type: %v\n", sc.Processor)
-	// fmt.Printf("    Opening Balance: %v\n", openingBalance)
-	// fmt.Printf("    Closing Balance: %v\n", closingBalance)
+	if err := processors.ExtractStatement(t.userConfig, ocr); err != nil {
+		return err
+	}
+
+	if t.userConfig.Debug {
+		for _, e := range ocr.Extracted {
+			util.PrintLabeled(e.Name, fmt.Sprintf("%v", e.Values))
+		}
+	}
 
 	return nil
 }

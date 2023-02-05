@@ -1,4 +1,4 @@
-package runtime
+package util
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/pather"
 )
 
-func prepOutDir(dir string) error {
+func EnsureDelete(dir string) error {
 	if pather.PathExists(dir) {
 		ok, err := pather.IsDir(dir)
 
@@ -25,14 +25,10 @@ func prepOutDir(dir string) error {
 		}
 	}
 
-	if err := pather.DirEnsure(dir); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func appendFile(dst string, src ...string) error {
+func AppendFile(dst string, src ...string) error {
 	dstHandle, err := os.Create(dst)
 
 	if err != nil {
@@ -68,7 +64,7 @@ func appendFile(dst string, src ...string) error {
 	return nil
 }
 
-func copyFile(dst, src string) error {
+func CopyFile(dst, src string) error {
 	dstHandle, err := os.Create(dst)
 
 	if err != nil {
@@ -93,31 +89,3 @@ func copyFile(dst, src string) error {
 
 	return nil
 }
-
-// func (t *Runtime) orig2txt(path string) string {
-// 	return fu.SwapExt(path, t.config.InputExt, "txt")
-// }
-
-// func (t *Runtime) orig2sum(path string) string {
-// 	return fu.SwapExt(path, t.config.InputExt, t.config.SumExt)
-// }
-
-// func (t *Runtime) sum2orig(path string) string {
-// 	return fu.SwapExt(path, t.config.SumExt, t.config.InputExt)
-// }
-
-// func (t Runtime) hasSumExt(path string) bool {
-// 	return strings.HasSuffix(path, t.config.SumExt)
-// }
-
-// func (t Runtime) isIgnorePath(path string) bool {
-// 	fn := func(s string) bool {
-// 		return strings.Contains(path, s)
-// 	}
-
-// 	return su.ExistFn(t.config.IgnorePaths, fn)
-// }
-
-// func (t Runtime) hasInputExt(path string) bool {
-// 	return strings.HasSuffix(path, t.config.InputExt)
-// }

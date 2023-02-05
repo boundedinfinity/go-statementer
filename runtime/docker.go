@@ -46,7 +46,7 @@ func (t *Runtime) runDocker(env map[string]string, args []string) (string, error
 	docker := exec.Command("docker-compose", dargs...)
 	docker.Env = denv
 
-	if t.config.Debug {
+	if t.userConfig.Debug {
 		fmt.Printf("%v %v",
 			slicer.Join(docker.Env, " "),
 			slicer.Join(docker.Args, " "),

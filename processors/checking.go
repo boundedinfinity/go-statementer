@@ -1,27 +1,44 @@
 package processors
 
-import "github.com/boundedinfinity/docsorter/model"
+import (
+	"github.com/boundedinfinity/docsorter/model"
+)
 
-func lookup(path string, descriminator model.StatementDiscriminator) (*StatementProcessor, error) {
-	config := model.CheckingConfig{
-		Account:            model.MatcherConfig{Pattern: `Account\sNumber:\s*(?P<account>[\d\s]+)`},
-		Transaction:        model.MatcherConfig{Pattern: `(?P<date>\d{2}/\d{2})\s+(?P<memo>.*?)\s+` + usdPattern},
-		OpeningDate:        model.MatcherConfig{Pattern: `(?P<date>\w+\s+\d+,\s+\d+)\s+through`},
-		OpeningBalance:     model.MatcherConfig{Pattern: `Beginning Balance\s+` + usdPattern},
-		ClosingDate:        model.MatcherConfig{Pattern: `through\s+(?P<date>\w+\s+\d+,\s+\d+)`},
-		ClosingBalance:     model.MatcherConfig{Pattern: `Ending Balance\s+` + usdPattern},
-		DepositsBalance:    model.MatcherConfig{Pattern: `Deposits and Additions\s+` + usdPattern},
-		DepositsStart:      model.MatcherConfig{Pattern: `(?P<depositsStart>DEPOSITS AND ADDITIONS)`},
-		DepositsEnd:        model.MatcherConfig{Pattern: `(?P<depositsEnd>Total Deposits and Additions)`},
-		ChecksBalance:      model.MatcherConfig{Pattern: `Checks Paid\s+` + usdPattern},
-		ChecksStart:        model.MatcherConfig{Pattern: `(?P<checksStart>CHECKS PAID)`},
-		ChecksEnd:          model.MatcherConfig{Pattern: `(?P<checksEnd>Total Checks Paid)`},
-		WithdrawalsBalance: model.MatcherConfig{Pattern: `Electronic Withdrawals\s+` + usdPattern},
-		WithdrawalsStart:   model.MatcherConfig{Pattern: `(?P<withdrawalsStart>ELECTRONIC WITHDRAWALS)`},
-		WithdrawalsEnd:     model.MatcherConfig{Pattern: `(?P<withdrawalsEnd>Total Electronic Withdrawals)`},
+func lookup(userConfig model.UserConfig, ocr *model.OcrContext) (*StatementProcessor, error) {
+	// txDescriptor := model.NewLine(
+	// 	"Transaction",
+	// 	`(?P<Date>\d{2}/\d{2})\s+(?P<Memo>.*?)\s+`+usdPattern,
+	// 	model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
+	// )
+
+	descriptor := model.CheckingDescriptor{
+		Account:            model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+)`),
+		OpeningBalance:     model.NewLineWithFieldAndKey("OpeningBalance", "Amount", `^Beginning Balance\s+`+usdPattern),
+		OpeningDate:        model.NewLineWithFieldAndKey("OpeningDate", "Date", `(?P<Date>\w+\s+\d+,\s+\d+)\s+through`),
+		ClosingBalance:     model.NewLineWithFieldAndKey("ClosingBalance", "Amount", `^Ending Balance\s+`+usdPattern),
+		ClosingDate:        model.NewLineWithFieldAndKey("ClosingDate", "Date", `through\s+(?P<Date>\w+\s+\d+,\s+\d+)`),
+		DepositsBalance:    model.NewLineWithFieldAndKey("DepositsBalance", "Amount", `Deposits and Additions\s+`+usdPattern),
+		DepositsStart:      model.NewLineWithField("DepositsStart", `(?P<DepositsStart>DEPOSITS AND ADDITIONS)`),
+		DepositsEnd:        model.NewLineWithField("DepositsEnd", `(?P<DepositsEnd>Total Deposits and Additions)`),
+		WithdrawalsBalance: model.NewLineWithFieldAndKey("WithdrawalsBalance", "Amount", `^Electronic Withdrawals\s+`+usdPattern),
+		WithdrawalsStart:   model.NewLineWithField("WithdrawalsStart", `(?P<WithdrawalsStart>ELECTRONIC WITHDRAWALS)`),
+		WithdrawalsEnd:     model.NewLineWithField("WithdrawalsEnd", `(?P<WithdrawalsEnd>Total Electronic Withdrawals)`),
+		ChecksBalance:      model.NewLineWithFieldAndKey("ChecksBalance", "Amount", `^Checks Paid\s+`+usdPattern),
+		ChecksStart:        model.NewLineWithField("ChecksStart", `(?P<ChecksStart>CHECKS PAID)`),
+		ChecksEnd:          model.NewLineWithField("ChecksEnd", `(?P<ChecksEnd>Total Checks Paid)`),
+		Page: model.NewLine(
+			"Page",
+			`Page (?P<Current>\d+) of (?P<Total>\d+)`,
+			model.NewField("Current"), model.NewField("Total"),
+		),
+		Transaction: model.NewLine(
+			"Transaction",
+			`(?P<Date>\d{2}/\d{2})\s+(?P<Memo>.*?)\s+`+usdPattern,
+			model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
+		),
 	}
 
-	processor, err := NewProcessor(path, config)
+	processor, err := NewProcessor(userConfig, ocr, descriptor)
 
 	if err != nil {
 		return processor, err
