@@ -2,7 +2,6 @@ package processors
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -10,35 +9,20 @@ import (
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/go-commoner/stringer"
 	"github.com/boundedinfinity/rfc3339date"
-	"github.com/oriser/regroup"
 )
 
 var (
-	usdPattern = `(?P<Amount>[+-]?\$?[\d,]+\.\d{2})`
-	// accountPattern         = `Account\sNumber:\s*(?P<account>[\d\s]+)`
-	openingBalancePatterns = []string{
-		`Previous\sBalance\s+` + usdPattern,
-		`Beginning\sBalance\s+` + usdPattern,
-	}
-	closingBalancePatterns = []string{
-		`New\sBalance\s+` + usdPattern,
-		`Ending\sBalance\s+` + usdPattern,
-	}
+	usdPattern         = `(?P<Amount>[+-]?\$?[\d,]+\.\d{2})`
+	transactionPattern = `(?P<date>\d{2}/\d{2})\s+(?<memo>.*?)\s+` + usdPattern
+	chaseDateFormat1   = "January 02, 2006"
+	chaseDateFormat2   = "01/02/2006"
+
 	openingDatePatterns = []string{
-		`(?P<date>\w+\s+\d+,\s+\d+)\s+through`,
 		`Opening/Closing Date\s+(?P<date>\d+/\d+/\d+)\s-\s\d+/\d+/\d+`,
 	}
 	closingDatePatterns = []string{
-		`through\s+(?P<date>\w+\s+\d+,\s+\d+)`,
 		`Opening/Closing Date\s+\d+/\d+/\d+\s-\s(?P<date>\d+/\d+/\d+)`,
 	}
-
-	depositsAndAdditionsBeginPattern = `(?P<depositsBegin>DEPOSITS AND ADDITIONS)`
-	depositsAndAdditionsEndPattern   = `(?P<depositsEnd>Total Deposits and Additions)`
-
-	transactionPattern = `(?P<date>\d{2}/\d{2})\s+(?<memo>.*?)\s+` + usdPattern
-
-	chaseCheckDateFormat = "January 02, 2006"
 )
 
 func trimLeading0(s string) string { return stringer.TrimLeft(s, "0") }
@@ -56,7 +40,6 @@ var (
 
 	dateCleanup = []func(string) string{
 		strings.TrimSpace,
-		removeSpaces,
 	}
 
 	usdCleanup = []func(string) string{
@@ -67,145 +50,84 @@ var (
 	}
 )
 
-func matchFn(key string, patterns ...string) func(string) map[string]string {
-	res := make([]*regroup.ReGroup, 0)
-
-	for _, pattern := range patterns {
-		res = append(res, regroup.MustCompile(pattern))
+func converTransaction(m map[string]string, transaction *model.Transaction, opening, closing rfc3339date.Rfc3339Date) error {
+	if err := convertString(m, "Memo", &transaction.Memo); err != nil {
+		return err
 	}
 
-	return func(line string) map[string]string {
-		for _, re := range res {
-			m, err := re.Groups(line)
-
-			if err == nil {
-				return m
-			}
-		}
-
-		return make(map[string]string)
+	if err := convertFloat(m, "Amount", &transaction.Amount, usdCleanup...); err != nil {
+		return err
 	}
-}
 
-func containsFn(key string) func(map[string]string) bool {
-	return func(m map[string]string) bool {
-		_, ok := m[key]
-		return ok
-	}
-}
+	addYear := func() func(string) string {
+		return func(s string) string {
+			year := opening.Year()
 
-func cleanFn(key string, fns ...func(string) string) func(map[string]string) {
-	return func(m map[string]string) {
-		if v, ok := m[key]; ok {
-			for _, fn := range fns {
-				v = fn(v)
+			if opening.Year() != closing.Year() {
+				if strings.HasPrefix(s, "01/") || strings.HasPrefix(s, "1/") {
+					year = closing.Year()
+				}
 			}
 
-			m[key] = v
+			s = fmt.Sprintf("%v/%v", s, year)
+			return s
 		}
 	}
-}
 
-func extractStringFn(key string, value *string) model.MatchHandler {
-	return func(matches map[string]string) {
-		if v, ok := matches[key]; ok {
-			*value = v
-		}
+	newCleanup := append(dateCleanup, addYear())
+
+	if err := convertDate(m, "Date", chaseDateFormat2, &transaction.Date, newCleanup...); err != nil {
+		return err
 	}
+
+	return nil
 }
 
-func extractFloatFn(key string, value *float32) model.MatchHandler {
-	return func(matches map[string]string) {
-		var s string
-		extractStringFn(key, &s)(matches)
-
-		if s != "" {
-			if p, err := strconv.ParseFloat(s, 32); err != nil {
-				fmt.Printf("can't parse %v: %v", s, err)
-			} else {
-				*value = float32(p)
-			}
+func convertString(m map[string]string, key string, v *string, fns ...func(string) string) error {
+	if s, ok := m[key]; ok {
+		for _, fn := range fns {
+			s = fn(s)
 		}
-	}
-}
 
-func extractDateFn(key string, layout string, value *rfc3339date.Rfc3339Date) model.MatchHandler {
-	return func(matches map[string]string) {
-		var s string
-		extractStringFn(key, &s)(matches)
-
-		if s != "" {
-			if parsed, err := time.Parse(layout, s); err != nil {
-				fmt.Printf("can't parse %v: %v", s, err)
-			} else {
-				r := rfc3339date.NewDate(parsed)
-				*value = r
-			}
-		}
-	}
-}
-
-// func createSectionRegex(desc *model.SectionDescriptor) error {
-// 	for _, field := range desc.Start.Fields {
-// 		field.Handlers = append(field.Handlers, func(_ map[string]string) {
-// 			desc.InSection = true
-// 		})
-// 	}
-
-// 	for _, field := range desc.End.Fields {
-// 		field.Handlers = append(field.Handlers, func(_ map[string]string) {
-// 			desc.InSection = false
-// 		})
-// 	}
-
-// 	for i, field := range desc.Line.Fields {
-// 		if i == 0 {
-// 			field.Handlers = append(field.Handlers, func(_ map[string]string) {
-// 				if desc.InSection {
-// 					desc.Matched = append(desc.Matched, *desc.Line.Copy())
-// 				}
-// 			})
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-func validateLineRegex(desc model.LineDescriptor) error {
-	if len(desc.Fields) == 0 {
+		*v = s
 		return nil
 	}
 
-	m := make(map[string]bool)
+	return fmt.Errorf("key %v not found in %v", key, m)
+}
 
-	for _, field := range desc.Fields {
-		m[field.Key] = false
+func convertFloat(m map[string]string, key string, v *float32, fns ...func(string) string) error {
+	var s string
+	var err error
+	var f float64
+
+	if err = convertString(m, key, &s, fns...); err != nil {
+		return err
 	}
 
-	re := regexp.MustCompile(`\(\?P<(?P<named>.*?)\>`)
-	foundGroups := re.FindAllStringSubmatch(desc.Pattern, -1)
-
-	for _, foundGroup := range foundGroups {
-		if len(foundGroup) == 2 {
-			for _, field := range desc.Fields {
-				if foundGroup[1] == field.Key {
-					m[field.Key] = true
-				}
-			}
-		}
+	if f, err = strconv.ParseFloat(s, 32); err != nil {
+		return err
 	}
 
-	missing := make([]string, 0)
+	*v = float32(f)
+	return nil
+}
 
-	for name, ok := range m {
-		if !ok {
-			missing = append(missing, name)
-		}
+func convertDate(m map[string]string, key string, layout string, v *rfc3339date.Rfc3339Date, fns ...func(string) string) error {
+	var s string
+	var err error
+	var d time.Time
+
+	if err = convertString(m, key, &s, fns...); err != nil {
+		return err
 	}
 
-	if len(missing) > 0 {
-		return fmt.Errorf("missing [%v] from %v", strings.Join(missing, ","), desc.Pattern)
+	if d, err = time.Parse(layout, s); err != nil {
+		fmt.Printf("can't parse %v: %v", s, err)
 	}
+
+	r := rfc3339date.NewDate(d)
+	*v = r
 
 	return nil
 }

@@ -2,3 +2,4 @@ docsorter
 *.pdf
 *-/
 config.yaml
+__debug_bin

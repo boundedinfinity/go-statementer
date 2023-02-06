@@ -1,25 +1,41 @@
 package runtime
 
 import (
-	"fmt"
-
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/processors"
-	"github.com/boundedinfinity/docsorter/util"
 )
 
 func (t *Runtime) Process(ocr *model.OcrContext) error {
-	if err := processors.Descriminator(ocr); err != nil {
+	manager := processors.NewManager(t.logger, t.userConfig, ocr)
+	classifier, err := manager.GetClassifier(ocr)
+
+	if err != nil {
 		return err
 	}
 
-	if err := processors.ExtractStatement(t.logger, t.userConfig, ocr); err != nil {
+	if err := manager.Extract(ocr, classifier); err != nil {
 		return err
 	}
 
-	for _, e := range ocr.Extracted {
-		t.logger.Debugf(util.PrintLabeled(e.Name, fmt.Sprintf("%v", e.Values)))
+	if err != nil {
+		return err
 	}
+
+	processor, err := manager.Lookup(ocr)
+
+	if err != nil {
+		return err
+	}
+
+	if err := manager.Extract(ocr, processor); err != nil {
+		return err
+	}
+
+	if err := processor.Convert(); err != nil {
+		return err
+	}
+
+	processor.Print()
 
 	return nil
 }

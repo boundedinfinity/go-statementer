@@ -6,7 +6,23 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/go-commoner/pather"
+	"github.com/boundedinfinity/go-commoner/slicer"
+	"github.com/boundedinfinity/go-commoner/stringer"
 )
+
+func GetFilteredFiles(workDir, ext string) ([]string, error) {
+	imageFiles, err := pather.GetFiles(workDir)
+
+	if err != nil {
+		return imageFiles, err
+	}
+
+	imageFiles = slicer.Filter(imageFiles, func(p string) bool {
+		return stringer.EndsWith(p, ext)
+	})
+
+	return imageFiles, nil
+}
 
 func EnsureDelete(dir string) error {
 	if pather.PathExists(dir) {

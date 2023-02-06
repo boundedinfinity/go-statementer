@@ -10,7 +10,7 @@ func PrintSep() string {
 	return sep
 }
 
-func PrintLabeled(label string, v string) string {
+func PrintLabeled(label string, v any) string {
 	text := fmt.Sprintf("%30v", label)
 	text = fmt.Sprintf("%v: %v", text, v)
 	return text

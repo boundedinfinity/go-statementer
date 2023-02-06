@@ -5,32 +5,19 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/docsorter/model"
-	"github.com/sirupsen/logrus"
 )
 
-func Descriminator(ocr *model.OcrContext) error {
-	ocr.Discriminator = model.StatementDiscriminator{
-		Account: "",
-	}
-
-	return nil
-}
-
-func ExtractStatement(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext) error {
-	processor, err := lookup(logger, userConfig, ocr)
+func (t *ProcessManager) GetClassifier(ocr *model.OcrContext) (model.Processor, error) {
+	proecssor, err := newClassifier(t.logger, t.userConfig, ocr)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := Extract(ocr, processor); err != nil {
-		return err
-	}
-
-	return nil
+	return proecssor, nil
 }
 
-func Extract(ocr *model.OcrContext, processor *StatementProcessor) error {
+func (t *ProcessManager) Extract(ocr *model.OcrContext, processor model.Processor) error {
 	file, err := os.Open(ocr.Text)
 
 	if err != nil {
@@ -51,5 +38,9 @@ func Extract(ocr *model.OcrContext, processor *StatementProcessor) error {
 		return err
 	}
 
+	return nil
+}
+
+func (t *ProcessManager) Convert(ocr *model.OcrContext, processor model.Processor) error {
 	return nil
 }
