@@ -14,7 +14,10 @@ type UserConfig struct {
 }
 
 type UserConfigStatement struct {
-	Name      string `yaml:"name"`
-	Account   string `yaml:"account"`
-	Processor string `yaml:"processor"`
+	Name        string `yaml:"name"`
+	Account     string `yaml:"account"`
+	Processor   string `yaml:"processor"`
+	Deposits    string `yaml:"deposits"`
+	Checks      string `yaml:"checks"`
+	Withdrawals string `yaml:"withdrawals"`
 }

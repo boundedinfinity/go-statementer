@@ -8,7 +8,6 @@ type AccountClassifier struct {
 
 type Processor interface {
 	Name() string
-	Lines() []*LineDescriptor
 	Extract(string) error
 	Convert() error
 	Print()
@@ -51,4 +50,14 @@ func NewLineWithField(name, pattern string) *LineDescriptor {
 
 func NewLineWithFieldAndKey(name, key, pattern string) *LineDescriptor {
 	return NewLine(name, pattern, NewFieldAndKey(name, key))
+}
+
+type StatementDescriptor struct {
+	List []*LineDescriptor
+}
+
+func NewStatementDescriptor() *StatementDescriptor {
+	return &StatementDescriptor{
+		List: make([]*LineDescriptor, 0),
+	}
 }

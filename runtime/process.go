@@ -5,20 +5,24 @@ import (
 
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/processors"
-	"github.com/boundedinfinity/docsorter/util"
 	"github.com/boundedinfinity/go-commoner/extentioner"
+	"github.com/boundedinfinity/go-commoner/optioner"
 	"github.com/gocarina/gocsv"
 )
 
 func (t *Runtime) Process(ocr *model.OcrContext) error {
 	manager := processors.NewManager(t.logger, t.userConfig, ocr)
-	classifier, err := manager.GetClassifier(ocr)
+	classifier, err := manager.GetClassifier()
 
 	if err != nil {
 		return err
 	}
 
-	if err := manager.Extract(ocr, classifier); err != nil {
+	if err := manager.Init(classifier); err != nil {
+		return err
+	}
+
+	if err := manager.Extract(classifier); err != nil {
 		return err
 	}
 
@@ -26,21 +30,25 @@ func (t *Runtime) Process(ocr *model.OcrContext) error {
 		return err
 	}
 
-	processor, err := manager.Lookup(ocr)
+	statement, err := manager.Lookup()
 
 	if err != nil {
 		return err
 	}
 
-	if err := manager.Extract(ocr, processor); err != nil {
+	if err := manager.Init(statement); err != nil {
 		return err
 	}
 
-	if err := processor.Convert(); err != nil {
+	if err := manager.Extract(statement); err != nil {
 		return err
 	}
 
-	processor.Print()
+	if err := manager.Transform(statement); err != nil {
+		return err
+	}
+
+	// processor.Print()
 
 	return nil
 }
@@ -50,31 +58,28 @@ func (t *Runtime) gnuCash(ocr *model.OcrContext) []model.GnuCashTransaction {
 
 	for _, tx := range ocr.Statement.Deposits {
 		gtx := model.NewGnuCashTrasaction()
-		gtx.Date = model.GnuCashDate{Rfc3339Date: tx.Date}
+		gtx.Date = model.GnuCashDate(tx.Date)
 		gtx.Description = tx.Memo
-		gtx.FullAccountName = model.CHECKING_INCOMING_ACCOUNT
-		gtx.AccountName = util.FullAccountName2AccountName(gtx.FullAccountName)
-		gtx.AmountNum = tx.Amount
+		gtx.AccountName = optioner.OfZ(ocr.UserConfig.Deposits).OrElse(model.CHECKING_INCOMING_ACCOUNT)
+		gtx.Incoming = model.GnuCashFloat(tx.Amount)
 		gtxs = append(gtxs, gtx)
 	}
 
 	for _, tx := range ocr.Statement.Checks {
 		gtx := model.NewGnuCashTrasaction()
-		gtx.Date = model.GnuCashDate{Rfc3339Date: tx.Date}
+		gtx.Date = model.GnuCashDate(tx.Date)
 		gtx.Description = tx.Memo
-		gtx.FullAccountName = model.CHECKING_OUTGOING_ACCOUNT
-		gtx.AccountName = util.FullAccountName2AccountName(gtx.FullAccountName)
-		gtx.AmountNum = -tx.Amount
+		gtx.AccountName = optioner.OfZ(ocr.UserConfig.Checks).OrElse(model.CHECKING_OUTGOING_ACCOUNT)
+		gtx.Outgoing = model.GnuCashFloat(tx.Amount)
 		gtxs = append(gtxs, gtx)
 	}
 
 	for _, tx := range ocr.Statement.Withdrawals {
 		gtx := model.NewGnuCashTrasaction()
-		gtx.Date = model.GnuCashDate{Rfc3339Date: tx.Date}
+		gtx.Date = model.GnuCashDate(tx.Date)
 		gtx.Description = tx.Memo
-		gtx.FullAccountName = model.CHECKING_OUTGOING_ACCOUNT
-		gtx.AccountName = util.FullAccountName2AccountName(gtx.FullAccountName)
-		gtx.AmountNum = -tx.Amount
+		gtx.AccountName = optioner.OfZ(ocr.UserConfig.Withdrawals).OrElse(model.CHECKING_OUTGOING_ACCOUNT)
+		gtx.Outgoing = model.GnuCashFloat(tx.Amount)
 		gtxs = append(gtxs, gtx)
 	}
 

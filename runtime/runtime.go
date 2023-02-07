@@ -10,7 +10,7 @@ func New(logger *logrus.Logger) Runtime {
 		extPdf:   ".pdf",
 		extImage: ".png",
 		extText:  ".txt",
-		extCvs:   ".cvs",
+		extCvs:   ".csv",
 		logger:   logger,
 	}
 }

@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/boundedinfinity/rfc3339date"
 )
 
@@ -9,44 +11,44 @@ const (
 	CHECKING_OUTGOING_ACCOUNT = "Expenses::Imported"
 )
 
-type GnuCashDate struct {
-	rfc3339date.Rfc3339Date
-}
+type GnuCashDate rfc3339date.Rfc3339Date
 
 func (t GnuCashDate) String() string {
-	return t.Rfc3339Date.String()
+	return rfc3339date.Rfc3339Date(t).String()
 }
 
-func (t *GnuCashDate) MarshalCSV() (string, error) {
-	if t.Rfc3339Date.IsZero() {
+func (t GnuCashDate) MarshalCSV() (string, error) {
+	if t.IsZero() {
 		return "", nil
 	} else {
-		return t.Rfc3339Date.Format("02/01/2006"), nil
+		return t.Format("2006-01-02"), nil
 	}
+}
+
+type GnuCashFloat float32
+
+func (t *GnuCashFloat) MarshalCSV() (string, error) {
+	return fmt.Sprintf("%.2f", *t), nil
+}
+
+type GnuCashRate float32
+
+func (t *GnuCashRate) MarshalCSV() (string, error) {
+	return fmt.Sprintf("%.4f", *t), nil
 }
 
 type GnuCashTransaction struct {
-	Date              GnuCashDate `csv:"Date"`
-	TransactionID     string      `csv:"Transaction ID"`
-	Number            string      `csv:"Number"`
-	Description       string      `csv:"Description"`
-	Notes             string      `csv:"Notes"`
-	CommodityCurrency string      `csv:"Commodity/Currency"`
-	VoidReason        string      `csv:"Void Reason"`
-	Action            string      `csv:"Action"`
-	Memo              string      `csv:"Memo"`
-	FullAccountName   string      `csv:"Full Account Name"`
-	AccountName       string      `csv:"Account Name"`
-	AmountWithSym     float32     `csv:"Amount With Sym"`
-	AmountNum         float32     `csv:"Amount Num."`
-	Reconcile         string      `csv:"Reconcile"`
-	ReconcileDate     GnuCashDate `csv:"Reconcile Date"`
-	RatePrice         float32     `csv:"Rate/Price"`
+	Date          GnuCashDate  `csv:"Date"`
+	TransactionID string       `csv:"Transaction ID"`
+	CheckNumber   string       `csv:"CheckNumber"`
+	Memo          string       `csv:"Memo"`
+	Description   string       `csv:"Description"`
+	Notes         string       `csv:"Notes"`
+	AccountName   string       `csv:"AccountName"`
+	Incoming      GnuCashFloat `csv:"Incoming"`
+	Outgoing      GnuCashFloat `csv:"Outgoing"`
 }
 
 func NewGnuCashTrasaction() GnuCashTransaction {
-	return GnuCashTransaction{
-		CommodityCurrency: "CURRENCY::USD",
-		RatePrice:         1,
-	}
+	return GnuCashTransaction{}
 }

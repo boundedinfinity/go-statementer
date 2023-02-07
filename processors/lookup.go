@@ -21,10 +21,10 @@ func (t *ProcessManager) getUserStatementConfig(account string) (model.UserConfi
 	return config, found
 }
 
-func (t *ProcessManager) Lookup(ocr *model.OcrContext) (model.Processor, error) {
+func (t *ProcessManager) Lookup() (*model.StatementDescriptor, error) {
 	var account string
 
-	for _, item := range ocr.Data {
+	for _, item := range t.ocr.Data {
 		if err := convertString(item.Values, "Account", &account, accountCleanup...); err == nil {
 			break
 		}
@@ -42,18 +42,13 @@ func (t *ProcessManager) Lookup(ocr *model.OcrContext) (model.Processor, error) 
 
 	t.ocr.UserConfig = config
 
-	var processor model.Processor
-	var err error
+	var processor *model.StatementDescriptor
 
 	switch config.Processor {
 	case "chase-checking":
-		processor, err = t.getChaseChecking()
+		processor = t.getChaseChecking()
 	default:
 		return nil, fmt.Errorf("no processor found for %v/%v", account, config.Processor)
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return processor, nil

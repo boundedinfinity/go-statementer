@@ -2,23 +2,15 @@ package processors
 
 import (
 	"bufio"
+	"errors"
 	"os"
 
 	"github.com/boundedinfinity/docsorter/model"
+	"github.com/oriser/regroup"
 )
 
-func (t *ProcessManager) GetClassifier(ocr *model.OcrContext) (model.Processor, error) {
-	proecssor, err := newClassifier(t.logger, t.userConfig, ocr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return proecssor, nil
-}
-
-func (t *ProcessManager) Extract(ocr *model.OcrContext, processor model.Processor) error {
-	file, err := os.Open(ocr.Text)
+func (t *ProcessManager) Extract(statement *model.StatementDescriptor) error {
+	file, err := os.Open(t.ocr.Text)
 
 	if err != nil {
 		return err
@@ -29,8 +21,24 @@ func (t *ProcessManager) Extract(ocr *model.OcrContext, processor model.Processo
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		if err := processor.Extract(scanner.Text()); err != nil {
-			return err
+		text := scanner.Text()
+		for _, line := range statement.List {
+			t.logger.Tracef("[[[[%v]]]][[[[%v]]]]\n", line.Pattern, text)
+
+			groups, err := line.Regex.Groups(text)
+
+			if err != nil {
+				if errors.Is(err, &regroup.NoMatchFoundError{}) {
+					continue
+				} else {
+					return err
+				}
+			}
+
+			t.ocr.Data = append(t.ocr.Data, model.Extracted{
+				Name:   line.Name,
+				Values: groups,
+			})
 		}
 	}
 
@@ -38,9 +46,5 @@ func (t *ProcessManager) Extract(ocr *model.OcrContext, processor model.Processo
 		return err
 	}
 
-	return nil
-}
-
-func (t *ProcessManager) Convert(ocr *model.OcrContext, processor model.Processor) error {
 	return nil
 }

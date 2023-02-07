@@ -1,94 +1,13 @@
 package processors
 
-import (
-	"errors"
+import "github.com/boundedinfinity/docsorter/model"
 
-	"github.com/boundedinfinity/docsorter/model"
-	"github.com/boundedinfinity/docsorter/util"
-	"github.com/oriser/regroup"
-	"github.com/sirupsen/logrus"
-)
-
-type ClassifierProcessor struct {
-	name       string
-	userConfig model.UserConfig
-	classifier model.AccountClassifier
-	logger     *logrus.Logger
-	ocr        *model.OcrContext
-	accounts   []*model.LineDescriptor
-}
-
-var _ model.Processor = &ClassifierProcessor{}
-
-func newClassifier(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext) (*ClassifierProcessor, error) {
-	processor := &ClassifierProcessor{
-		ocr:        ocr,
-		userConfig: userConfig,
-		logger:     logger,
-		accounts: []*model.LineDescriptor{
+func (t *ProcessManager) GetClassifier() (*model.StatementDescriptor, error) {
+	return &model.StatementDescriptor{
+		List: []*model.LineDescriptor{
 			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+)`),
 		},
-	}
-
-	for _, line := range processor.Lines() {
-		if err := util.ValidateLineRegex(*line); err != nil {
-			return processor, err
-		}
-	}
-
-	for _, line := range processor.Lines() {
-		matcher, err := regroup.Compile(line.Pattern)
-
-		if err != nil {
-			return processor, err
-		}
-
-		line.Regex = matcher
-	}
-
-	return processor, nil
-}
-
-func (p *ClassifierProcessor) GnuCash() []model.GnuCashTransaction {
-	return make([]model.GnuCashTransaction, 0)
-}
-
-func (t ClassifierProcessor) Convert() error {
-	return nil
-}
-
-func (t ClassifierProcessor) Name() string {
-	return t.name
-}
-
-func (t ClassifierProcessor) Lines() []*model.LineDescriptor {
-	return t.accounts
-}
-
-func (t ClassifierProcessor) Print() {
-}
-
-func (p *ClassifierProcessor) Extract(line string) error {
-	for _, lineDesc := range p.Lines() {
-		p.logger.Tracef("[[[[%v]]]][[[[%v]]]]\n", lineDesc.Pattern, line)
-
-		groups, err := lineDesc.Regex.Groups(line)
-
-		if err != nil {
-			if errors.Is(err, &regroup.NoMatchFoundError{}) {
-				continue
-			} else {
-				return err
-			}
-		}
-
-		p.ocr.Data = append(p.ocr.Data, model.Extracted{
-			Name:   lineDesc.Name,
-			Values: groups,
-		})
-	}
-
-	return nil
+	}, nil
 }
 
 // # -   name: chase-credit-card
