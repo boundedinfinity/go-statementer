@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -51,6 +52,12 @@ var (
 )
 
 func converTransaction(m map[string]string, transaction *model.Transaction, opening, closing rfc3339date.Rfc3339Date) error {
+	if err := convertString(m, "Number", &transaction.Number); err != nil {
+		if !errors.Is(err, ErrKeyNotFound) {
+			return err
+		}
+	}
+
 	if err := convertString(m, "Memo", &transaction.Memo); err != nil {
 		return err
 	}
@@ -83,6 +90,10 @@ func converTransaction(m map[string]string, transaction *model.Transaction, open
 	return nil
 }
 
+var (
+	ErrKeyNotFound = errors.New("key not found")
+)
+
 func convertString(m map[string]string, key string, v *string, fns ...func(string) string) error {
 	if s, ok := m[key]; ok {
 		for _, fn := range fns {
@@ -93,7 +104,7 @@ func convertString(m map[string]string, key string, v *string, fns ...func(strin
 		return nil
 	}
 
-	return fmt.Errorf("key %v not found in %v", key, m)
+	return fmt.Errorf("%w %v %v", ErrKeyNotFound, key, m)
 }
 
 func convertFloat(m map[string]string, key string, v *float32, fns ...func(string) string) error {

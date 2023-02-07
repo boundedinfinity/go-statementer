@@ -7,9 +7,19 @@ type OcrContext struct {
 	Images     []string    `yaml:"images"`
 	Texts      []string    `yaml:"texts"`
 	Text       string      `yaml:"texts"`
+	Csv        string      `yaml:"csv"`
 	Data       []Extracted `yaml:"extracted"`
 	UserConfig UserConfigStatement
-	Statement  CheckingStatement `yaml:"statement"`
+	Statement  *CheckingStatement `yaml:"statement"`
+}
+
+func NewOcrContext() *OcrContext {
+	return &OcrContext{
+		Images:    make([]string, 0),
+		Texts:     make([]string, 0),
+		Data:      make([]Extracted, 0),
+		Statement: NewCheckingStatement(),
+	}
 }
 
 type Extracted struct {

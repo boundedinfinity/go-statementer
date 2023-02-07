@@ -49,6 +49,10 @@ func newClassifier(logger *logrus.Logger, userConfig model.UserConfig, ocr *mode
 	return processor, nil
 }
 
+func (p *ClassifierProcessor) GnuCash() []model.GnuCashTransaction {
+	return make([]model.GnuCashTransaction, 0)
+}
+
 func (t ClassifierProcessor) Convert() error {
 	return nil
 }
@@ -66,7 +70,7 @@ func (t ClassifierProcessor) Print() {
 
 func (p *ClassifierProcessor) Extract(line string) error {
 	for _, lineDesc := range p.Lines() {
-		p.logger.Tracef("%v: on %v\n", lineDesc.Pattern, line)
+		p.logger.Tracef("[[[[%v]]]][[[[%v]]]]\n", lineDesc.Pattern, line)
 
 		groups, err := lineDesc.Regex.Groups(line)
 

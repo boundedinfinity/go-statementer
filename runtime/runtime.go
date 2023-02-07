@@ -10,6 +10,7 @@ func New(logger *logrus.Logger) Runtime {
 		extPdf:   ".pdf",
 		extImage: ".png",
 		extText:  ".txt",
+		extCvs:   ".cvs",
 		logger:   logger,
 	}
 }
@@ -20,4 +21,5 @@ type Runtime struct {
 	extPdf     string
 	extImage   string
 	extText    string
+	extCvs     string
 }

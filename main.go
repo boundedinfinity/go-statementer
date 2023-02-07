@@ -38,6 +38,11 @@ func main() {
 			handleError(err)
 			return
 		}
+
+		if err := rt.DumpCvs(&ocr); err != nil {
+			handleError(err)
+			return
+		}
 	}
 }
 

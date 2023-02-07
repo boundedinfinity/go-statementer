@@ -13,7 +13,6 @@ import (
 type ChaseCheckingStatementProcessor struct {
 	name                   string
 	userConfig             model.UserConfig
-	Statement              model.CheckingStatement
 	logger                 *logrus.Logger
 	ocr                    *model.OcrContext
 	Account                *model.LineDescriptor
@@ -31,6 +30,7 @@ type ChaseCheckingStatementProcessor struct {
 	WithdrawalsStart       *model.LineDescriptor
 	WithdrawalsEnd         *model.LineDescriptor
 	Transaction            *model.LineDescriptor
+	CheckTransaction       *model.LineDescriptor
 	Page                   *model.LineDescriptor
 	AnnualPercentageEarned *model.LineDescriptor
 	InterestEarned         *model.LineDescriptor
@@ -44,7 +44,6 @@ func newChaseChecking(logger *logrus.Logger, userConfig model.UserConfig, ocr *m
 		ocr:                ocr,
 		userConfig:         userConfig,
 		logger:             logger,
-		Statement:          *model.NewCheckingStatement(),
 		Account:            model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+)`),
 		OpeningBalance:     model.NewLineWithFieldAndKey("OpeningBalance", "Amount", `^Beginning Balance\s+`+usdPattern),
 		OpeningDate:        model.NewLineWithFieldAndKey("OpeningDate", "Date", `(?P<Date>\w+\s+\d+,\s+\d+)\s+through`),
@@ -55,7 +54,7 @@ func newChaseChecking(logger *logrus.Logger, userConfig model.UserConfig, ocr *m
 		DepositsEnd:        model.NewLineWithField("DepositsEnd", `(?P<DepositsEnd>Total Deposits and Additions)`),
 		WithdrawalsBalance: model.NewLineWithFieldAndKey("WithdrawalsBalance", "Amount", `^Electronic Withdrawals\s+`+usdPattern),
 		WithdrawalsStart:   model.NewLineWithField("WithdrawalsStart", `(?P<WithdrawalsStart>ELECTRONIC WITHDRAWALS)`),
-		WithdrawalsEnd:     model.NewLineWithField("WithdrawalsEnd", `(?P<WithdrawalsEnd>Total Electronic Withdrawals)`),
+		WithdrawalsEnd:     model.NewLineWithField("WithdrawalsEnd", `^(?P<WithdrawalsEnd>Total Electronic Withdrawals)`),
 		ChecksBalance:      model.NewLineWithFieldAndKey("ChecksBalance", "Amount", `^Checks Paid\s+`+usdPattern),
 		ChecksStart:        model.NewLineWithField("ChecksStart", `(?P<ChecksStart>CHECKS PAID)`),
 		ChecksEnd:          model.NewLineWithField("ChecksEnd", `(?P<ChecksEnd>Total Checks Paid)`),
@@ -66,7 +65,12 @@ func newChaseChecking(logger *logrus.Logger, userConfig model.UserConfig, ocr *m
 		),
 		Transaction: model.NewLine(
 			"Transaction",
-			`(?P<Date>\d{2}/\d{2})\s+(?P<Memo>.*?)\s+`+usdPattern,
+			`^(?P<Date>\d{2}/\d{2})_*\s+(?P<Memo>.*?)\s+`+usdPattern,
+			model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
+		),
+		CheckTransaction: model.NewLine(
+			"Transaction",
+			`^(?P<Number>\d+)\s+(?P<Memo>.*?)\s+(?P<Date>\d{2}/\d{2})\s+`+usdPattern,
 			model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
 		),
 	}
@@ -102,51 +106,57 @@ func (t *ChaseCheckingStatementProcessor) Convert() error {
 		case "DepositsStart":
 			section = make([]model.Transaction, 0)
 		case "DepositsEnd":
-			t.Statement.Deposits = section
+			t.ocr.Statement.Deposits = section
 		case "WithdrawalsStart":
 			section = make([]model.Transaction, 0)
 		case "WithdrawalsEnd":
-			t.Statement.Withdrawals = section
+			t.ocr.Statement.Withdrawals = section
 		case "ChecksStart":
 			section = make([]model.Transaction, 0)
 		case "ChecksEnd":
-			t.Statement.Checks = section
+			t.ocr.Statement.Checks = section
 		case "Transaction":
 			var transaction model.Transaction
-			if err := converTransaction(ext.Values, &transaction, t.Statement.OpeningDate, t.Statement.ClosingDate); err != nil {
+			if err := converTransaction(ext.Values, &transaction, t.ocr.Statement.OpeningDate, t.ocr.Statement.ClosingDate); err != nil {
+				return err
+			}
+			section = append(section, transaction)
+		case "CheckTransaction":
+			var transaction model.Transaction
+			if err := converTransaction(ext.Values, &transaction, t.ocr.Statement.OpeningDate, t.ocr.Statement.ClosingDate); err != nil {
 				return err
 			}
 			section = append(section, transaction)
 		case "Account":
-			if err := convertString(ext.Values, "Account", &t.Statement.Account, accountCleanup...); err != nil {
+			if err := convertString(ext.Values, "Account", &t.ocr.Statement.Account, accountCleanup...); err != nil {
 				return err
 			}
 		case "OpeningBalance":
-			if err := convertFloat(ext.Values, "Amount", &t.Statement.OpeningBalance, usdCleanup...); err != nil {
+			if err := convertFloat(ext.Values, "Amount", &t.ocr.Statement.OpeningBalance, usdCleanup...); err != nil {
 				return err
 			}
 		case "ClosingBalance":
-			if err := convertFloat(ext.Values, "Amount", &t.Statement.ClosingBalance, usdCleanup...); err != nil {
+			if err := convertFloat(ext.Values, "Amount", &t.ocr.Statement.ClosingBalance, usdCleanup...); err != nil {
 				return err
 			}
 		case "DepositsBalance":
-			if err := convertFloat(ext.Values, "Amount", &t.Statement.DepositsBalance, usdCleanup...); err != nil {
+			if err := convertFloat(ext.Values, "Amount", &t.ocr.Statement.DepositsBalance, usdCleanup...); err != nil {
 				return err
 			}
 		case "ChecksBalance":
-			if err := convertFloat(ext.Values, "Amount", &t.Statement.ChecksBalance, usdCleanup...); err != nil {
+			if err := convertFloat(ext.Values, "Amount", &t.ocr.Statement.ChecksBalance, usdCleanup...); err != nil {
 				return err
 			}
 		case "WithdrawalsBalance":
-			if err := convertFloat(ext.Values, "Amount", &t.Statement.WithdrawalsBalance, usdCleanup...); err != nil {
+			if err := convertFloat(ext.Values, "Amount", &t.ocr.Statement.WithdrawalsBalance, usdCleanup...); err != nil {
 				return err
 			}
 		case "OpeningDate":
-			if err := convertDate(ext.Values, "Date", chaseDateFormat1, &t.Statement.OpeningDate, dateCleanup...); err != nil {
+			if err := convertDate(ext.Values, "Date", chaseDateFormat1, &t.ocr.Statement.OpeningDate, dateCleanup...); err != nil {
 				return err
 			}
 		case "ClosingDate":
-			if err := convertDate(ext.Values, "Date", chaseDateFormat1, &t.Statement.ClosingDate, dateCleanup...); err != nil {
+			if err := convertDate(ext.Values, "Date", chaseDateFormat1, &t.ocr.Statement.ClosingDate, dateCleanup...); err != nil {
 				return err
 			}
 		}
@@ -157,19 +167,19 @@ func (t *ChaseCheckingStatementProcessor) Convert() error {
 
 func (t ChaseCheckingStatementProcessor) Print() {
 	t.logger.Info(util.PrintLabeled("Name", t.ocr.UserConfig.Name))
-	t.logger.Info(util.PrintLabeled("Account", t.Statement.Account))
-	t.logger.Info(util.PrintLabeled("OpeningBalance", t.Statement.OpeningBalance))
-	t.logger.Info(util.PrintLabeled("ClosingBalance", t.Statement.ClosingBalance))
-	t.logger.Info(util.PrintLabeled("OpeningDate", t.Statement.OpeningDate))
-	t.logger.Info(util.PrintLabeled("ClosingDate", t.Statement.ClosingDate))
+	t.logger.Info(util.PrintLabeled("Account", t.ocr.Statement.Account))
+	t.logger.Info(util.PrintLabeled("OpeningBalance", t.ocr.Statement.OpeningBalance))
+	t.logger.Info(util.PrintLabeled("ClosingBalance", t.ocr.Statement.ClosingBalance))
+	t.logger.Info(util.PrintLabeled("OpeningDate", t.ocr.Statement.OpeningDate))
+	t.logger.Info(util.PrintLabeled("ClosingDate", t.ocr.Statement.ClosingDate))
 }
 
 func (t ChaseCheckingStatementProcessor) Lines() []*model.LineDescriptor {
 	lines := make([]*model.LineDescriptor, 0)
-	lines = append(lines, t.Account, t.Transaction, t.Page,
+	lines = append(lines, t.Account, t.Transaction, t.Page, t.CheckTransaction,
 		t.OpeningBalance, t.OpeningDate,
 		t.ClosingBalance, t.ClosingDate,
-		t.WithdrawalsBalance, t.WithdrawalsStart,
+		t.WithdrawalsBalance, t.WithdrawalsStart, t.WithdrawalsEnd,
 		t.ChecksBalance, t.ChecksStart, t.ChecksEnd,
 		t.DepositsBalance, t.DepositsStart, t.DepositsEnd,
 		t.AnnualPercentageEarned, t.InterestEarned, t.InterestPaid,
@@ -180,7 +190,7 @@ func (t ChaseCheckingStatementProcessor) Lines() []*model.LineDescriptor {
 
 func (p *ChaseCheckingStatementProcessor) Extract(line string) error {
 	for _, lineDesc := range p.Lines() {
-		p.logger.Tracef("%v: on %v\n", lineDesc.Pattern, line)
+		p.logger.Tracef("[[[[%v]]]][[[[%v]]]]\n", lineDesc.Pattern, line)
 
 		groups, err := lineDesc.Regex.Groups(line)
 

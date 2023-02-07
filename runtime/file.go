@@ -20,9 +20,9 @@ func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
 	}
 
 	for _, path := range allPaths {
-		ocrs = append(ocrs, model.OcrContext{
-			Source: path,
-		})
+		ocr := model.NewOcrContext()
+		ocr.Source = path
+		ocrs = append(ocrs, *ocr)
 	}
 
 	return ocrs, nil
