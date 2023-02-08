@@ -11,6 +11,7 @@ func New(logger *logrus.Logger) Runtime {
 		extImage: ".png",
 		extText:  ".txt",
 		extCvs:   ".csv",
+		extYaml:  ".yaml",
 		logger:   logger,
 	}
 }
@@ -22,4 +23,5 @@ type Runtime struct {
 	extImage   string
 	extText    string
 	extCvs     string
+	extYaml    string
 }

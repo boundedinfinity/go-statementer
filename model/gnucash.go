@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	CHECKING_INCOMING_ACCOUNT = "Equity::Imported"
-	CHECKING_OUTGOING_ACCOUNT = "Expenses::Imported"
+	IMPORTED_UNKOWN = "Imported-Unkown"
 )
 
 type GnuCashDate rfc3339date.Rfc3339Date

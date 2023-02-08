@@ -10,7 +10,6 @@ type UserConfig struct {
 	Reprocess   bool                  `yaml:"reprocess"`
 	IgnorePaths []string              `yaml:"ignorePaths"`
 	Statements  []UserConfigStatement `yaml:"statements"`
-	// Debug       bool                  `yaml:"debug"`
 }
 
 type UserConfigStatement struct {

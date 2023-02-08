@@ -10,7 +10,7 @@ import (
 )
 
 func (t *ProcessManager) Extract(statement *model.StatementDescriptor) error {
-	file, err := os.Open(t.ocr.Text)
+	file, err := os.Open(t.ocr.WorkText)
 
 	if err != nil {
 		return err

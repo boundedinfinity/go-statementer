@@ -43,6 +43,16 @@ func main() {
 			handleError(err)
 			return
 		}
+
+		if err := rt.DumpYaml(&ocr); err != nil {
+			handleError(err)
+			return
+		}
+
+		if err := rt.Output(&ocr); err != nil {
+			handleError(err)
+			return
+		}
 	}
 }
 

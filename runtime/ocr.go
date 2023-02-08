@@ -24,11 +24,11 @@ func (t *Runtime) OcrSingle(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if err := util.AppendFile(ocr.Text, ocr.Texts...); err != nil {
+	if err := util.AppendFile(ocr.WorkText, ocr.WorkTexts...); err != nil {
 		return err
 	}
 
-	util.PrintLabeled("Text", ocr.Text)
+	util.PrintLabeled("Text", ocr.WorkText)
 
 	return nil
 }
@@ -36,7 +36,7 @@ func (t *Runtime) OcrSingle(ocr *model.OcrContext) error {
 func (t *Runtime) prepareDirectory(ocr *model.OcrContext) error {
 	workDir := extentioner.Strip(pather.Base(ocr.Source))
 	ocr.WorkDir = pather.Join(t.userConfig.WorkPath, workDir)
-	ocr.Pdf = pather.Join(ocr.WorkDir, pather.Base(ocr.Source))
+	ocr.WorkPdf = pather.Join(ocr.WorkDir, pather.Base(ocr.Source))
 
 	if t.userConfig.Reprocess {
 		if err := util.EnsureDelete(ocr.WorkDir); err != nil {
@@ -48,8 +48,8 @@ func (t *Runtime) prepareDirectory(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if t.userConfig.Reprocess || !pather.PathExists(ocr.Pdf) {
-		if err := util.CopyFile(ocr.Pdf, ocr.Source); err != nil {
+	if t.userConfig.Reprocess || !pather.PathExists(ocr.WorkPdf) {
+		if err := util.CopyFile(ocr.WorkPdf, ocr.Source); err != nil {
 			return err
 		}
 	}
@@ -89,17 +89,17 @@ func (t *Runtime) pdf2Images(ocr *model.OcrContext) error {
 		}
 	}
 
-	ocr.Images = imageFiles
-	util.PrintLabeleds("Images", ocr.Images)
+	ocr.WorkImages = imageFiles
+	util.PrintLabeleds("Images", ocr.WorkImages)
 
 	return nil
 }
 
 func (t *Runtime) images2Text(ocr *model.OcrContext) error {
-	ocr.Text = extentioner.Swap(ocr.Pdf, t.extPdf, t.extText)
+	ocr.WorkText = extentioner.Swap(ocr.WorkPdf, t.extPdf, t.extText)
 
-	if pather.PathExists(ocr.Text) {
-		if err := os.Remove(ocr.Text); err != nil {
+	if pather.PathExists(ocr.WorkText) {
+		if err := os.Remove(ocr.WorkText); err != nil {
 			return err
 		}
 	}
@@ -115,7 +115,7 @@ func (t *Runtime) images2Text(ocr *model.OcrContext) error {
 			"WORK_DIR": ocr.WorkDir,
 		}
 
-		imageBases := slicer.Map(ocr.Images, func(f string) string {
+		imageBases := slicer.Map(ocr.WorkImages, func(f string) string {
 			return pather.Base(f)
 		})
 
@@ -141,8 +141,8 @@ func (t *Runtime) images2Text(ocr *model.OcrContext) error {
 		}
 	}
 
-	ocr.Texts = textFiles
-	util.PrintLabeleds("Texts", ocr.Texts)
+	ocr.WorkTexts = textFiles
+	util.PrintLabeleds("Texts", ocr.WorkTexts)
 
 	return nil
 }

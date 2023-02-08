@@ -3,6 +3,7 @@ package runtime
 import (
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/util"
+	"github.com/boundedinfinity/go-commoner/slicer"
 )
 
 func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
@@ -18,6 +19,8 @@ func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
 
 		allPaths = append(allPaths, paths...)
 	}
+
+	allPaths = slicer.Dedup(allPaths)
 
 	for _, path := range allPaths {
 		ocr := model.NewOcrContext()
