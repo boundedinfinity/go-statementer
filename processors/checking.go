@@ -27,7 +27,7 @@ func (t *ProcessManager) getChaseChecking() *model.StatementDescriptor {
 			),
 			model.NewLine(
 				"Transaction",
-				`^(?P<Date>\d{2}/\d{2})_*\s+(?P<Memo>.*?)\s+`+usdPattern,
+				`^(?P<Date>\d{2}/\d{2})[_\.]*\s+(?P<Memo>.*?)\s{10,}+`+usdPattern,
 				model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
 			),
 			model.NewLine(
