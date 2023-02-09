@@ -27,14 +27,19 @@ func main() {
 
 	for _, ocr := range ocrs {
 		logger.Infof(util.PrintSep())
-		logger.Infof(util.PrintLabeled("Source", ocr.Source))
+		logger.Infof(util.PrintLabeled("Source", ocr.Stage1.Source))
 
-		if err := rt.OcrSingle(&ocr); err != nil {
+		if err := rt.OcrSingle(&ocr.Stage1); err != nil {
 			handleError(err)
 			return
 		}
 
 		if err := rt.Process(&ocr); err != nil {
+			handleError(err)
+			return
+		}
+
+		if err := rt.Rename(ocr, &ocr.Stage2, ocr.Stage1); err != nil {
 			handleError(err)
 			return
 		}
@@ -49,7 +54,7 @@ func main() {
 			return
 		}
 
-		if err := rt.Output(&ocr); err != nil {
+		if err := rt.Output(&ocr.Dest, &ocr.Stage2); err != nil {
 			handleError(err)
 			return
 		}

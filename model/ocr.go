@@ -1,28 +1,40 @@
 package model
 
+type ProcessStage struct {
+	Source string   `yaml:"source"`
+	Dir    string   `yaml:"dir"`
+	Pdf    string   `yaml:"pdf"`
+	Image  string   `yaml:"image"`
+	Images []string `yaml:"images"`
+	Text   string   `yaml:"text"`
+	Texts  []string `yaml:"texts"`
+	Csv    string   `yaml:"csv"`
+	Yaml   string   `yaml:"yaml"`
+}
+
+func NewProcessStage() ProcessStage {
+	return ProcessStage{
+		Images: make([]string, 0),
+		Texts:  make([]string, 0),
+	}
+}
+
 type OcrContext struct {
-	Source     string      `yaml:"source"`
-	WorkDir    string      `yaml:"workDir"`
-	WorkPdf    string      `yaml:"workPdf"`
-	WorkImages []string    `yaml:"workImages"`
-	WorkTexts  []string    `yaml:"workTexts"`
-	WorkText   string      `yaml:"workText"`
-	WorkCsv    string      `yaml:"workCsv"`
-	WorkYaml   string      `yaml:"workYaml"`
-	DestCsv    string      `yaml:"destCsv"`
-	DestPdf    string      `yaml:"destPdf"`
-	DestYaml   string      `yaml:"destYaml"`
-	Data       []Extracted `yaml:"extracted"`
+	Stage1     ProcessStage `yaml:"stage1"`
+	Stage2     ProcessStage `yaml:"stage2"`
+	Dest       ProcessStage `yaml:"dest"`
+	Data       []Extracted  `yaml:"extracted"`
 	UserConfig UserConfigStatement
 	Statement  *CheckingStatement `yaml:"statement"`
 }
 
 func NewOcrContext() *OcrContext {
 	return &OcrContext{
-		WorkImages: make([]string, 0),
-		WorkTexts:  make([]string, 0),
-		Data:       make([]Extracted, 0),
-		Statement:  NewCheckingStatement(),
+		Stage1:    NewProcessStage(),
+		Stage2:    NewProcessStage(),
+		Dest:      NewProcessStage(),
+		Data:      make([]Extracted, 0),
+		Statement: NewCheckingStatement(),
 	}
 }
 

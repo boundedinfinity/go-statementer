@@ -11,54 +11,30 @@ import (
 	"github.com/boundedinfinity/go-commoner/slicer"
 )
 
-func (t *Runtime) OcrSingle(ocr *model.OcrContext) error {
-	if err := t.prepareDirectory(ocr); err != nil {
+func (t *Runtime) OcrSingle(stage *model.ProcessStage) error {
+	if err := t.prepareDirectory(stage); err != nil {
 		return err
 	}
 
-	if err := t.pdf2Images(ocr); err != nil {
+	if err := t.pdf2Images(stage); err != nil {
 		return err
 	}
 
-	if err := t.images2Text(ocr); err != nil {
+	if err := t.images2Text(stage); err != nil {
 		return err
 	}
 
-	if err := util.AppendFile(ocr.WorkText, ocr.WorkTexts...); err != nil {
+	if err := util.AppendFile(stage.Text, stage.Texts...); err != nil {
 		return err
 	}
 
-	util.PrintLabeled("Text", ocr.WorkText)
+	util.PrintLabeled("Text", stage.Text)
 
 	return nil
 }
 
-func (t *Runtime) prepareDirectory(ocr *model.OcrContext) error {
-	workDir := extentioner.Strip(pather.Base(ocr.Source))
-	ocr.WorkDir = pather.Join(t.userConfig.WorkPath, workDir)
-	ocr.WorkPdf = pather.Join(ocr.WorkDir, pather.Base(ocr.Source))
-
-	if t.userConfig.Reprocess {
-		if err := util.EnsureDelete(ocr.WorkDir); err != nil {
-			return err
-		}
-	}
-
-	if err := pather.DirEnsure(ocr.WorkDir); err != nil {
-		return err
-	}
-
-	if t.userConfig.Reprocess || !pather.PathExists(ocr.WorkPdf) {
-		if err := util.CopyFile(ocr.WorkPdf, ocr.Source); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (t *Runtime) pdf2Images(ocr *model.OcrContext) error {
-	imageFiles, err := util.GetFilteredFiles(ocr.WorkDir, t.extImage)
+func (t *Runtime) pdf2Images(stage *model.ProcessStage) error {
+	imageFiles, err := util.GetFilteredFiles(stage.Dir, t.extImage)
 
 	if err != nil {
 		return err
@@ -66,14 +42,14 @@ func (t *Runtime) pdf2Images(ocr *model.OcrContext) error {
 
 	if len(imageFiles) == 0 || t.userConfig.Reprocess {
 		env := map[string]string{
-			"WORK_DIR": ocr.WorkDir,
+			"WORK_DIR": stage.Dir,
 		}
 
 		// -density 300 -quiet $pdf_fullname $pdf_nameonly-%04d.$IMAGE_EXT
 		imageMagickArgs := []string{
 			"imagemagick", "-quiet", "-density", "300",
-			pather.Base(ocr.Source),
-			fmt.Sprintf("%v-%%04d%v", pather.Base(ocr.WorkDir), t.extImage),
+			pather.Base(stage.Source),
+			fmt.Sprintf("%v-%%04d%v", pather.Base(stage.Dir), t.extImage),
 		}
 
 		if stdOut, err := t.runDocker(env, imageMagickArgs); err != nil {
@@ -82,29 +58,29 @@ func (t *Runtime) pdf2Images(ocr *model.OcrContext) error {
 			fmt.Println(stdOut)
 		}
 
-		imageFiles, err = util.GetFilteredFiles(ocr.WorkDir, t.extImage)
+		imageFiles, err = util.GetFilteredFiles(stage.Dir, t.extImage)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	ocr.WorkImages = imageFiles
-	util.PrintLabeleds("Images", ocr.WorkImages)
+	stage.Images = imageFiles
+	util.PrintLabeleds("Images", stage.Images)
 
 	return nil
 }
 
-func (t *Runtime) images2Text(ocr *model.OcrContext) error {
-	ocr.WorkText = extentioner.Swap(ocr.WorkPdf, t.extPdf, t.extText)
+func (t *Runtime) images2Text(stage *model.ProcessStage) error {
+	stage.Text = extentioner.Swap(stage.Pdf, t.extPdf, t.extText)
 
-	if pather.PathExists(ocr.WorkText) {
-		if err := os.Remove(ocr.WorkText); err != nil {
+	if pather.PathExists(stage.Text) {
+		if err := os.Remove(stage.Text); err != nil {
 			return err
 		}
 	}
 
-	textFiles, err := util.GetFilteredFiles(ocr.WorkDir, t.extText)
+	textFiles, err := util.GetFilteredFiles(stage.Dir, t.extText)
 
 	if err != nil {
 		return err
@@ -112,10 +88,10 @@ func (t *Runtime) images2Text(ocr *model.OcrContext) error {
 
 	if len(textFiles) == 0 || t.userConfig.Reprocess {
 		env := map[string]string{
-			"WORK_DIR": ocr.WorkDir,
+			"WORK_DIR": stage.Dir,
 		}
 
-		imageBases := slicer.Map(ocr.WorkImages, func(f string) string {
+		imageBases := slicer.Map(stage.Images, func(f string) string {
 			return pather.Base(f)
 		})
 
@@ -134,15 +110,15 @@ func (t *Runtime) images2Text(ocr *model.OcrContext) error {
 			}
 		}
 
-		textFiles, err = util.GetFilteredFiles(ocr.WorkDir, t.extText)
+		textFiles, err = util.GetFilteredFiles(stage.Dir, t.extText)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	ocr.WorkTexts = textFiles
-	util.PrintLabeleds("Texts", ocr.WorkTexts)
+	stage.Texts = textFiles
+	util.PrintLabeleds("Texts", stage.Texts)
 
 	return nil
 }

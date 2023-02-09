@@ -1,6 +1,8 @@
 package processors
 
 import (
+	"fmt"
+
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/util"
 	"github.com/oriser/regroup"
@@ -17,7 +19,9 @@ func (t *ProcessManager) Init(descriptor *model.StatementDescriptor) error {
 		matcher, err := regroup.Compile(line.Pattern)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("line descriptor error: %v : %w",
+				line.Name, err,
+			)
 		}
 
 		line.Regex = matcher

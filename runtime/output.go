@@ -12,21 +12,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func (t *Runtime) Output(ocr *model.OcrContext) error {
+func (t *Runtime) Output(dst, src *model.ProcessStage) error {
 
-	if err := pather.DirEnsure(pather.Dir(ocr.DestCsv)); err != nil {
+	if err := pather.DirEnsure(pather.Dir(dst.Csv)); err != nil {
 		return err
 	}
 
-	if err := util.CopyFile(ocr.DestCsv, ocr.WorkCsv); err != nil {
+	if err := util.CopyFile(dst.Csv, src.Csv); err != nil {
 		return err
 	}
 
-	if err := util.CopyFile(ocr.DestPdf, ocr.WorkPdf); err != nil {
-		return err
-	}
-
-	if err := util.CopyFile(ocr.DestYaml, ocr.WorkYaml); err != nil {
+	if err := util.CopyFile(dst.Pdf, src.Csv); err != nil {
 		return err
 	}
 
@@ -34,8 +30,8 @@ func (t *Runtime) Output(ocr *model.OcrContext) error {
 }
 
 func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
-	ocr.WorkCsv = extentioner.Swap(ocr.WorkPdf, t.extPdf, t.extCvs)
-	file, err := os.OpenFile(ocr.WorkCsv, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	ocr.Stage2.Csv = extentioner.Swap(ocr.Stage2.Pdf, t.extPdf, t.extCvs)
+	file, err := os.OpenFile(ocr.Stage2.Csv, os.O_RDWR|os.O_CREATE, os.ModePerm)
 
 	if err != nil {
 		panic(err)
@@ -53,10 +49,8 @@ func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
 }
 
 func (t *Runtime) DumpYaml(ocr *model.OcrContext) error {
-	ocr.WorkYaml = extentioner.Swap(ocr.WorkPdf, t.extPdf, t.extYaml)
-	ocr.DestCsv = pather.Join(t.userConfig.OutputPath, pather.Base(ocr.WorkCsv))
-	ocr.DestPdf = pather.Join(t.userConfig.OutputPath, pather.Base(ocr.WorkPdf))
-	ocr.DestYaml = pather.Join(t.userConfig.OutputPath, pather.Base(ocr.WorkYaml))
+	ocr.Stage2.Yaml = extentioner.Swap(ocr.Stage2.Pdf, t.extPdf, t.extYaml)
+	Stage2Stage(t.userConfig.OutputPath, pather.Base(ocr.Stage2.Dir), &ocr.Dest, ocr.Stage2)
 
 	bs, err := yaml.Marshal(ocr)
 
@@ -64,7 +58,7 @@ func (t *Runtime) DumpYaml(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(ocr.WorkYaml, bs, 0755); err != nil {
+	if err := ioutil.WriteFile(ocr.Stage2.Yaml, bs, 0755); err != nil {
 		return err
 	}
 
