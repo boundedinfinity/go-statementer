@@ -14,7 +14,7 @@ import (
 
 func (t *Runtime) Output(dst, src *model.ProcessStage) error {
 
-	if err := pather.DirEnsure(pather.Dir(dst.Csv)); err != nil {
+	if err := pather.DirEnsure(dst.Dir); err != nil {
 		return err
 	}
 
@@ -22,7 +22,7 @@ func (t *Runtime) Output(dst, src *model.ProcessStage) error {
 		return err
 	}
 
-	if err := util.CopyFile(dst.Pdf, src.Csv); err != nil {
+	if err := util.CopyFile(dst.Pdf, src.Pdf); err != nil {
 		return err
 	}
 
