@@ -49,12 +49,12 @@ func main() {
 			return
 		}
 
-		if err := rt.DumpCvs(&ocr); err != nil {
+		if err := rt.DumpYaml(&ocr); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.DumpYaml(&ocr); err != nil {
+		if err := rt.DumpCvs(&ocr); err != nil {
 			handleError(err)
 			return
 		}

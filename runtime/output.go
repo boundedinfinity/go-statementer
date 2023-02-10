@@ -47,6 +47,7 @@ func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
 
 func (t *Runtime) DumpYaml(ocr *model.OcrContext) error {
 	name := pather.Base(ocr.Stage2.Dir)
+
 	if err := t.CalcFiles(t.UserConfig.OutputPath, name, &ocr.Dest, ocr.Stage2); err != nil {
 		return err
 	}

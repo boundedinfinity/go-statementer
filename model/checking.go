@@ -16,6 +16,7 @@ type CheckingStatement struct {
 	Checks             []Transaction           `yaml:"checks"`
 	WithdrawalsBalance float32                 `yaml:"withdrawalsBalance"`
 	Withdrawals        []Transaction           `yaml:"withdrawals"`
+	AtmDebit           []Transaction           `yaml:"atmDebit"`
 }
 
 func NewCheckingStatement() *CheckingStatement {

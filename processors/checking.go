@@ -15,6 +15,8 @@ func (t *ProcessManager) getChaseChecking() *model.StatementDescriptor {
 			model.NewLineWithField("DepositsStart", `(?P<DepositsStart>DEPOSITS AND ADDITIONS)`),
 			model.NewLineWithField("DepositsEnd", `(?P<DepositsEnd>Total Deposits and Additions)`),
 			model.NewLineWithFieldAndKey("WithdrawalsBalance", "Amount", `^Electronic Withdrawals\s+`+usdPattern),
+			model.NewLineWithField("AtmDebitWithdrawalsStart", `(?P<AtmDebitWithdrawalsStart>ATM & DEBIT CARD WITHDRAWALS)`),
+			model.NewLineWithField("AtmDebitWithdrawalsEnd", `^(?P<AtmDebitWithdrawalsEnd>Total ATM & Debit Card Withdrawals)`),
 			model.NewLineWithField("WithdrawalsStart", `(?P<WithdrawalsStart>ELECTRONIC WITHDRAWALS)`),
 			model.NewLineWithField("WithdrawalsEnd", `^(?P<WithdrawalsEnd>Total Electronic Withdrawals)`),
 			model.NewLineWithFieldAndKey("ChecksBalance", "Amount", `^Checks Paid\s+`+usdPattern),

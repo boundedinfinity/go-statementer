@@ -19,6 +19,10 @@ func (t *ProcessManager) Transform(descriptor *model.StatementDescriptor) error 
 			section = make([]model.Transaction, 0)
 		case "ChecksEnd":
 			t.ocr.Statement.Checks = section
+		case "AtmDebitWithdrawalsStart":
+			section = make([]model.Transaction, 0)
+		case "AtmDebitWithdrawalsEnd":
+			t.ocr.Statement.AtmDebit = section
 		case "Transaction":
 			var transaction model.Transaction
 			if err := converTransaction(ext.Values, &transaction, t.ocr.Statement.OpeningDate, t.ocr.Statement.ClosingDate); err != nil {
