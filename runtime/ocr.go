@@ -40,7 +40,7 @@ func (t *Runtime) pdf2Images(stage *model.ProcessStage) error {
 		return err
 	}
 
-	if len(imageFiles) == 0 || t.userConfig.Reprocess {
+	if len(imageFiles) == 0 || t.UserConfig.Reprocess {
 		env := map[string]string{
 			"WORK_DIR": stage.Dir,
 		}
@@ -72,8 +72,6 @@ func (t *Runtime) pdf2Images(stage *model.ProcessStage) error {
 }
 
 func (t *Runtime) images2Text(stage *model.ProcessStage) error {
-	stage.Text = extentioner.Swap(stage.Pdf, t.extPdf, t.extText)
-
 	if pather.PathExists(stage.Text) {
 		if err := os.Remove(stage.Text); err != nil {
 			return err
@@ -86,7 +84,7 @@ func (t *Runtime) images2Text(stage *model.ProcessStage) error {
 		return err
 	}
 
-	if len(textFiles) == 0 || t.userConfig.Reprocess {
+	if len(textFiles) == 0 || t.UserConfig.Reprocess {
 		env := map[string]string{
 			"WORK_DIR": stage.Dir,
 		}

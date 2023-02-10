@@ -6,14 +6,12 @@ import (
 
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/docsorter/util"
-	"github.com/boundedinfinity/go-commoner/extentioner"
 	"github.com/boundedinfinity/go-commoner/pather"
 	"github.com/gocarina/gocsv"
 	"gopkg.in/yaml.v2"
 )
 
 func (t *Runtime) Output(dst, src *model.ProcessStage) error {
-
 	if err := pather.DirEnsure(dst.Dir); err != nil {
 		return err
 	}
@@ -30,7 +28,6 @@ func (t *Runtime) Output(dst, src *model.ProcessStage) error {
 }
 
 func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
-	ocr.Stage2.Csv = extentioner.Swap(ocr.Stage2.Pdf, t.extPdf, t.extCvs)
 	file, err := os.OpenFile(ocr.Stage2.Csv, os.O_RDWR|os.O_CREATE, os.ModePerm)
 
 	if err != nil {
@@ -49,8 +46,10 @@ func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
 }
 
 func (t *Runtime) DumpYaml(ocr *model.OcrContext) error {
-	ocr.Stage2.Yaml = extentioner.Swap(ocr.Stage2.Pdf, t.extPdf, t.extYaml)
-	Stage2Stage(t.userConfig.OutputPath, pather.Base(ocr.Stage2.Dir), &ocr.Dest, ocr.Stage2)
+	name := pather.Base(ocr.Stage2.Dir)
+	if err := t.CalcFiles(t.UserConfig.OutputPath, name, &ocr.Dest, ocr.Stage2); err != nil {
+		return err
+	}
 
 	bs, err := yaml.Marshal(ocr)
 

@@ -10,18 +10,18 @@ func New(logger *logrus.Logger) Runtime {
 		extPdf:   ".pdf",
 		extImage: ".png",
 		extText:  ".txt",
-		extCvs:   ".csv",
+		extCsv:   ".csv",
 		extYaml:  ".yaml",
 		logger:   logger,
 	}
 }
 
 type Runtime struct {
-	userConfig model.UserConfig
+	UserConfig model.UserConfig
 	logger     *logrus.Logger
 	extPdf     string
 	extImage   string
 	extText    string
-	extCvs     string
+	extCsv     string
 	extYaml    string
 }

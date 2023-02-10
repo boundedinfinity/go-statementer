@@ -17,7 +17,7 @@ func (t *Runtime) LoadUserConfig(path string) error {
 		return err
 	}
 
-	if err := yaml.Unmarshal(bs, &t.userConfig); err != nil {
+	if err := yaml.Unmarshal(bs, &t.UserConfig); err != nil {
 		return err
 	}
 
@@ -27,7 +27,7 @@ func (t *Runtime) LoadUserConfig(path string) error {
 		DisableTimestamp: true,
 	})
 
-	switch t.userConfig.LogLevel {
+	switch t.UserConfig.LogLevel {
 	case "info":
 		t.logger.SetLevel(logrus.InfoLevel)
 	case "debug":
@@ -40,19 +40,20 @@ func (t *Runtime) LoadUserConfig(path string) error {
 }
 
 func (t *Runtime) normalizeUserConfig() {
-	t.userConfig.InputPaths = slicer.Map(t.userConfig.InputPaths, func(path string) string {
+	t.UserConfig.InputPaths = slicer.Map(t.UserConfig.InputPaths, func(path string) string {
 		return environmenter.Sub(path)
 	})
-	t.userConfig.OutputPath = environmenter.Sub(t.userConfig.OutputPath)
-	t.userConfig.WorkPath = environmenter.Sub(t.userConfig.WorkPath)
-	t.userConfig.SumExt = extentioner.Normalize(t.userConfig.SumExt)
-	t.userConfig.InputExt = extentioner.Normalize(t.userConfig.InputExt)
 
-	if t.userConfig.IgnorePaths == nil {
-		t.userConfig.IgnorePaths = make([]string, 0)
+	t.UserConfig.OutputPath = environmenter.Sub(t.UserConfig.OutputPath)
+	t.UserConfig.WorkPath = environmenter.Sub(t.UserConfig.WorkPath)
+	t.UserConfig.SumExt = extentioner.Normalize(t.UserConfig.SumExt)
+	t.UserConfig.InputExt = extentioner.Normalize(t.UserConfig.InputExt)
+
+	if t.UserConfig.IgnorePaths == nil {
+		t.UserConfig.IgnorePaths = make([]string, 0)
 	}
 
-	for _, p := range t.userConfig.IgnorePaths {
-		t.userConfig.IgnorePaths = append(t.userConfig.IgnorePaths, environmenter.Sub(p))
+	for _, p := range t.UserConfig.IgnorePaths {
+		t.UserConfig.IgnorePaths = append(t.UserConfig.IgnorePaths, environmenter.Sub(p))
 	}
 }

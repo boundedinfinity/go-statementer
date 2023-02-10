@@ -29,6 +29,11 @@ func main() {
 		logger.Infof(util.PrintSep())
 		logger.Infof(util.PrintLabeled("Source", ocr.Stage1.Source))
 
+		if err := rt.CalcFiles(rt.UserConfig.WorkPath, "", &ocr.Stage1, ocr.Stage1); err != nil {
+			handleError(err)
+			return
+		}
+
 		if err := rt.OcrSingle(&ocr.Stage1); err != nil {
 			handleError(err)
 			return

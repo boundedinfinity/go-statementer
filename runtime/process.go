@@ -6,7 +6,7 @@ import (
 )
 
 func (t *Runtime) Process(ocr *model.OcrContext) error {
-	manager := processors.NewManager(t.logger, t.userConfig, ocr)
+	manager := processors.NewManager(t.logger, t.UserConfig, ocr)
 	classifier, err := manager.GetClassifier()
 
 	if err != nil {
@@ -42,8 +42,6 @@ func (t *Runtime) Process(ocr *model.OcrContext) error {
 	if err := manager.Transform(statement); err != nil {
 		return err
 	}
-
-	// processor.Print()
 
 	return nil
 }
