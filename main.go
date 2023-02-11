@@ -59,10 +59,10 @@ func main() {
 			return
 		}
 
-		if err := rt.Output(&ocr.Dest, &ocr.Stage2); err != nil {
-			handleError(err)
-			return
-		}
+		// if err := rt.Output(&ocr.Dest, &ocr.Stage2); err != nil {
+		// 	handleError(err)
+		// 	return
+		// }
 	}
 }
 
