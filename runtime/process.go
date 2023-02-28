@@ -39,7 +39,7 @@ func (t *Runtime) Process(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if err := manager.Transform(statement); err != nil {
+	if err := manager.Transform(ocr); err != nil {
 		return err
 	}
 

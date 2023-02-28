@@ -37,7 +37,7 @@ func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
 	return ocrs, nil
 }
 
-func (t *Runtime) CalcFiles(dir, name string, dst *model.ProcessStage, src model.ProcessStage) error {
+func (t *Runtime) CalcFiles(dir, name string, dst *model.FileSet, src model.FileSet) error {
 	if dir == "" {
 		return errors.New("missing source")
 	}
@@ -80,10 +80,10 @@ func (t *Runtime) CalcFiles(dir, name string, dst *model.ProcessStage, src model
 	return nil
 }
 
-func (t *Runtime) Rename(ocr model.OcrContext, dst *model.ProcessStage, src model.ProcessStage) error {
-	name := ocr.Statement.Account
+func (t *Runtime) Rename(ocr model.OcrContext, dst *model.FileSet, src model.FileSet) error {
+	name := ocr.Checking.Account
 	name = name[len(name)-4:]
-	name += "-" + ocr.Statement.ClosingDate.String()
+	name += "-" + ocr.Checking.ClosingDate.String()
 
 	if err := t.CalcFiles(t.UserConfig.WorkPath, name, dst, src); err != nil {
 		return err
@@ -116,7 +116,7 @@ func (t *Runtime) Rename(ocr model.OcrContext, dst *model.ProcessStage, src mode
 	return nil
 }
 
-func (t *Runtime) prepareDirectory(stage *model.ProcessStage) error {
+func (t *Runtime) prepareDirectory(stage *model.FileSet) error {
 	if t.UserConfig.Reprocess {
 		if err := util.EnsureDelete(stage.Dir); err != nil {
 			return err

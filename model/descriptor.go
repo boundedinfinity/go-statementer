@@ -6,13 +6,6 @@ type AccountClassifier struct {
 	Account string `yaml:"account"`
 }
 
-type Processor interface {
-	Name() string
-	Extract(string) error
-	Convert() error
-	Print()
-}
-
 type FieldDescriptor struct {
 	Name string
 	Key  string

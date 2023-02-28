@@ -19,8 +19,8 @@ type CheckingStatement struct {
 	AtmDebit           []Transaction           `yaml:"atmDebit"`
 }
 
-func NewCheckingStatement() *CheckingStatement {
-	return &CheckingStatement{
+func NewCheckingStatement() CheckingStatement {
+	return CheckingStatement{
 		Deposits:    make([]Transaction, 0),
 		Checks:      make([]Transaction, 0),
 		Withdrawals: make([]Transaction, 0),

@@ -11,7 +11,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/slicer"
 )
 
-func (t *Runtime) OcrSingle(stage *model.ProcessStage) error {
+func (t *Runtime) OcrSingle(stage *model.FileSet) error {
 	if err := t.prepareDirectory(stage); err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (t *Runtime) OcrSingle(stage *model.ProcessStage) error {
 	return nil
 }
 
-func (t *Runtime) pdf2Images(stage *model.ProcessStage) error {
+func (t *Runtime) pdf2Images(stage *model.FileSet) error {
 	imageFiles, err := util.GetFilteredFiles(stage.Dir, t.extImage)
 
 	if err != nil {
@@ -71,7 +71,7 @@ func (t *Runtime) pdf2Images(stage *model.ProcessStage) error {
 	return nil
 }
 
-func (t *Runtime) images2Text(stage *model.ProcessStage) error {
+func (t *Runtime) images2Text(stage *model.FileSet) error {
 	if pather.PathExists(stage.Text) {
 		if err := os.Remove(stage.Text); err != nil {
 			return err

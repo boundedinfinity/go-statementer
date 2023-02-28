@@ -24,7 +24,7 @@ func (t *ProcessManager) getUserStatementConfig(account string) (model.UserConfi
 func (t *ProcessManager) Lookup() (*model.StatementDescriptor, error) {
 	var account string
 
-	for _, item := range t.ocr.Data {
+	for _, item := range t.ocr.Extracted {
 		if err := convertString(item.Values, "Account", &account, accountCleanup...); err == nil {
 			break
 		}
@@ -47,6 +47,8 @@ func (t *ProcessManager) Lookup() (*model.StatementDescriptor, error) {
 	switch config.Processor {
 	case "chase-checking":
 		processor = t.getChaseChecking()
+	case "chase-credit-card":
+		processor = t.getCreditCard()
 	default:
 		return nil, fmt.Errorf("no processor found for %v/%v", account, config.Processor)
 	}

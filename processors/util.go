@@ -17,6 +17,7 @@ var (
 	transactionPattern = `(?P<date>\d{2}/\d{2})\s+(?<memo>.*?)\s+` + usdPattern
 	chaseDateFormat1   = "January 02, 2006"
 	chaseDateFormat2   = "01/02/2006"
+	chaseDateFormat3   = "01/02/06"
 
 	openingDatePatterns = []string{
 		`Opening/Closing Date\s+(?P<date>\d+/\d+/\d+)\s-\s\d+/\d+/\d+`,
@@ -41,6 +42,13 @@ var (
 
 	dateCleanup = []func(string) string{
 		strings.TrimSpace,
+		func(s string) string {
+			if strings.HasPrefix(s, "4") {
+				s = strings.Replace(s, "4", "1", 1)
+			}
+
+			return s
+		},
 	}
 
 	usdCleanup = []func(string) string{
@@ -51,7 +59,7 @@ var (
 	}
 )
 
-func converTransaction(m map[string]string, transaction *model.Transaction, opening, closing rfc3339date.Rfc3339Date) error {
+func convertTransaction(m map[string]string, transaction *model.Transaction, opening, closing rfc3339date.Rfc3339Date) error {
 	if err := convertString(m, "Number", &transaction.Number); err != nil {
 		if !errors.Is(err, ErrKeyNotFound) {
 			return err
@@ -134,7 +142,7 @@ func convertDate(m map[string]string, key string, layout string, v *rfc3339date.
 	}
 
 	if d, err = time.Parse(layout, s); err != nil {
-		fmt.Printf("can't parse %v: %v", s, err)
+		return fmt.Errorf("can't parse %v: %v", s, err)
 	}
 
 	r := rfc3339date.NewDate(d)

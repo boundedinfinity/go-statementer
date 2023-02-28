@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func (t *Runtime) Output(dst, src *model.ProcessStage) error {
+func (t *Runtime) Output(dst, src *model.FileSet) error {
 	if err := pather.DirEnsure(dst.Dir); err != nil {
 		return err
 	}

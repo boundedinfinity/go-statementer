@@ -9,7 +9,6 @@ type ProcessManager struct {
 	userConfig model.UserConfig
 	logger     *logrus.Logger
 	ocr        *model.OcrContext
-	processors map[string]model.Processor
 }
 
 func NewManager(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.OcrContext) *ProcessManager {

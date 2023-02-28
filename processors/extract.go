@@ -35,7 +35,7 @@ func (t *ProcessManager) Extract(statement *model.StatementDescriptor) error {
 				}
 			}
 
-			t.ocr.Data = append(t.ocr.Data, model.Extracted{
+			t.ocr.Extracted = append(t.ocr.Extracted, model.Extracted{
 				Name:   line.Name,
 				Values: groups,
 			})

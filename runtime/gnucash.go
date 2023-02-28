@@ -29,19 +29,19 @@ func (t *Runtime) gnuCash(ocr *model.OcrContext) []model.GnuCashTransaction {
 		gtxs = append(gtxs, gnucash)
 	}
 
-	for _, tx := range ocr.Statement.Deposits {
+	for _, tx := range ocr.Checking.Deposits {
 		incoming(tx, "DEPOSITS AND ADDITIONS")
 	}
 
-	for _, tx := range ocr.Statement.Checks {
+	for _, tx := range ocr.Checking.Checks {
 		outgoing(tx, "CHECKS PAID")
 	}
 
-	for _, tx := range ocr.Statement.Withdrawals {
+	for _, tx := range ocr.Checking.Withdrawals {
 		outgoing(tx, "ELECTRONIC WITHDRAWALS")
 	}
 
-	for _, tx := range ocr.Statement.AtmDebit {
+	for _, tx := range ocr.Checking.AtmDebit {
 		outgoing(tx, "ATM & DEBIT CARD WITHDRAWALS")
 	}
 
