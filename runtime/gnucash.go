@@ -10,8 +10,7 @@ func (t *Runtime) gnuCash(ocr *model.ProcessContext) []model.GnuCashTransaction 
 	case "chase-checking":
 		return t.gnuCashChecking(ocr)
 	case "chase-credit-card":
-		var gtxs []model.GnuCashTransaction
-		return gtxs
+		return t.gnuCashCredit(ocr)
 	default:
 		var gtxs []model.GnuCashTransaction
 		return gtxs
