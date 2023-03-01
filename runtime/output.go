@@ -27,7 +27,7 @@ func (t *Runtime) Output(dst, src *model.FileSet) error {
 	return nil
 }
 
-func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
+func (t *Runtime) DumpCvs(ocr *model.ProcessContext) error {
 	file, err := os.OpenFile(ocr.Stage2.Csv, os.O_RDWR|os.O_CREATE, os.ModePerm)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (t *Runtime) DumpCvs(ocr *model.OcrContext) error {
 	return nil
 }
 
-func (t *Runtime) DumpYaml(ocr *model.OcrContext) error {
+func (t *Runtime) DumpYaml(ocr *model.ProcessContext) error {
 	name := pather.Base(ocr.Stage2.Dir)
 
 	if err := t.CalcFiles(t.UserConfig.OutputPath, name, &ocr.Dest, ocr.Stage2); err != nil {

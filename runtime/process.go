@@ -5,8 +5,8 @@ import (
 	"github.com/boundedinfinity/docsorter/processors"
 )
 
-func (t *Runtime) Process(ocr *model.OcrContext) error {
-	manager := processors.NewManager(t.logger, t.UserConfig, ocr)
+func (t *Runtime) Process(pc *model.ProcessContext) error {
+	manager := processors.NewManager(t.logger, t.UserConfig, pc)
 	classifier, err := manager.GetClassifier()
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (t *Runtime) Process(ocr *model.OcrContext) error {
 		return err
 	}
 
-	if err := manager.Transform(ocr); err != nil {
+	if err := manager.Transform(pc); err != nil {
 		return err
 	}
 

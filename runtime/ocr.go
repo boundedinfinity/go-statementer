@@ -11,7 +11,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/slicer"
 )
 
-func (t *Runtime) OcrSingle(stage *model.FileSet) error {
+func (t *Runtime) Ocr(stage *model.FileSet) error {
 	if err := t.prepareDirectory(stage); err != nil {
 		return err
 	}

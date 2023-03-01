@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -10,17 +11,18 @@ import (
 	"github.com/boundedinfinity/go-commoner/extentioner"
 	"github.com/boundedinfinity/go-commoner/pather"
 	"github.com/boundedinfinity/go-commoner/slicer"
+	"github.com/boundedinfinity/rfc3339date"
 )
 
-func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
-	var ocrs []model.OcrContext
+func (t *Runtime) LoadFiles() ([]model.ProcessContext, error) {
+	var pcs []model.ProcessContext
 	allPaths := make([]string, 0)
 
 	for _, path := range t.UserConfig.InputPaths {
 		paths, err := util.GetFilteredFiles(path, t.extPdf)
 
 		if err != nil {
-			return ocrs, err
+			return pcs, err
 		}
 
 		allPaths = append(allPaths, paths...)
@@ -29,12 +31,12 @@ func (t *Runtime) LoadFiles() ([]model.OcrContext, error) {
 	allPaths = slicer.Dedup(allPaths)
 
 	for _, path := range allPaths {
-		ocr := model.NewOcrContext()
-		ocr.Stage1.Source = path
-		ocrs = append(ocrs, *ocr)
+		pc := model.NewProcessContext()
+		pc.Stage1.Source = path
+		pcs = append(pcs, *pc)
 	}
 
-	return ocrs, nil
+	return pcs, nil
 }
 
 func (t *Runtime) CalcFiles(dir, name string, dst *model.FileSet, src model.FileSet) error {
@@ -80,10 +82,24 @@ func (t *Runtime) CalcFiles(dir, name string, dst *model.FileSet, src model.File
 	return nil
 }
 
-func (t *Runtime) Rename(ocr model.OcrContext, dst *model.FileSet, src model.FileSet) error {
-	name := ocr.Checking.Account
+func (t *Runtime) Rename(ocr model.ProcessContext, dst *model.FileSet, src model.FileSet) error {
+	var account string
+	var closingDate rfc3339date.Rfc3339Date
+
+	switch ocr.UserConfig.Processor {
+	case "chase-checking":
+		account = ocr.Checking.Account
+		closingDate = ocr.Checking.ClosingDate
+	case "chase-credit-card":
+		account = ocr.CreditCard.Account
+		closingDate = ocr.CreditCard.ClosingDate
+	default:
+		return fmt.Errorf("error transformer for %v", ocr.UserConfig.Account)
+	}
+
+	name := account
 	name = name[len(name)-4:]
-	name += "-" + ocr.Checking.ClosingDate.String()
+	name += "-" + closingDate.String()
 
 	if err := t.CalcFiles(t.UserConfig.WorkPath, name, dst, src); err != nil {
 		return err

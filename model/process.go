@@ -1,6 +1,13 @@
 package model
 
-type OcrContext struct {
+import "github.com/boundedinfinity/rfc3339date"
+
+type StatementProcessor interface {
+	Account() string
+	ClosingDate() rfc3339date.Rfc3339Date
+}
+
+type ProcessContext struct {
 	Stage1     FileSet     `yaml:"stage1"`
 	Stage2     FileSet     `yaml:"stage2"`
 	Dest       FileSet     `yaml:"dest"`
@@ -10,8 +17,8 @@ type OcrContext struct {
 	CreditCard CreditCardStatement `yaml:"creditcard"`
 }
 
-func NewOcrContext() *OcrContext {
-	return &OcrContext{
+func NewProcessContext() *ProcessContext {
+	return &ProcessContext{
 		Stage1:    NewFileSet(),
 		Stage2:    NewFileSet(),
 		Dest:      NewFileSet(),

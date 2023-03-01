@@ -26,3 +26,26 @@ func NewCheckingStatement() CheckingStatement {
 		Withdrawals: make([]Transaction, 0),
 	}
 }
+
+type CheckingStatementRaw struct {
+	Account            string           `yaml:"accountNumber"`
+	OpeningBalance     string           `yaml:"openingBalance"`
+	ClosingBalance     string           `yaml:"closingBalance"`
+	OpeningDate        string           `yaml:"openingDate"`
+	ClosingDate        string           `yaml:"closingDate"`
+	DepositsBalance    string           `yaml:"depositsBalance"`
+	Deposits           []TransactionRaw `yaml:"deposits"`
+	ChecksBalance      string           `yaml:"checksBalance"`
+	Checks             []TransactionRaw `yaml:"checks"`
+	WithdrawalsBalance string           `yaml:"withdrawalsBalance"`
+	Withdrawals        []TransactionRaw `yaml:"withdrawals"`
+	AtmDebit           []TransactionRaw `yaml:"atmDebit"`
+}
+
+func NewCheckingStatementRaw() CheckingStatementRaw {
+	return CheckingStatementRaw{
+		Deposits:    make([]TransactionRaw, 0),
+		Checks:      make([]TransactionRaw, 0),
+		Withdrawals: make([]TransactionRaw, 0),
+	}
+}

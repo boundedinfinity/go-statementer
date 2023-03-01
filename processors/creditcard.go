@@ -27,14 +27,61 @@ func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
 			),
 			model.NewLine(
 				"Transaction",
-				`^(?P<Date>\d{2}/\d{2})[_\.]*\s+(?P<Memo>.*?)\s{10,}`+usdPattern,
-				model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
-			),
-			model.NewLine(
-				"Transaction",
-				`^(?P<Number>\d+)\s+(?P<Memo>.*?)\s+(?P<Date>\d{2}/\d{2})\s+`+usdPattern,
+				`(?P<Date>\d{2}/\d{2})[_\.]*\s+(?P<Memo>.*?)\s{10,}`+usdPattern,
 				model.NewField("Date"), model.NewField("Memo"), model.NewField("Amount"),
 			),
 		},
 	}
+}
+
+func (t *ProcessManager) transformCreditCard(statement *model.CreditCardStatement) error {
+	var section []model.Transaction
+
+	for _, ext := range t.ocr.Extracted {
+		switch ext.Name {
+		case "PaymentsStart":
+			section = make([]model.Transaction, 0)
+		case "PurchasesStart":
+			if len(statement.Payments) <= 0 {
+				statement.Payments = section
+				section = make([]model.Transaction, 0)
+			}
+		case "PurchasesAndRedemptionsStart":
+			statement.Purchases = section
+			section = make([]model.Transaction, 0)
+		case "ImportantNews":
+			statement.Redemptions = section
+			section = make([]model.Transaction, 0)
+		case "Transaction":
+			var transaction model.Transaction
+
+			if err := convertTransaction(ext.Values, &transaction, statement.OpeningDate, statement.ClosingDate); err != nil {
+				return err
+			}
+
+			section = append(section, transaction)
+		case "Account":
+			if err := convertString(ext.Values, "Account", &statement.Account, accountCleanup...); err != nil {
+				return err
+			}
+		case "OpeningBalance":
+			if err := convertFloat(ext.Values, "Amount", &statement.OpeningBalance, usdCleanup...); err != nil {
+				return err
+			}
+		case "ClosingBalance":
+			if err := convertFloat(ext.Values, "Amount", &statement.ClosingBalance, usdCleanup...); err != nil {
+				return err
+			}
+		case "OpeningDate":
+			if err := convertDate(ext.Values, "Date", chaseDateFormat3, &statement.OpeningDate, dateCleanup...); err != nil {
+				return err
+			}
+		case "ClosingDate":
+			if err := convertDate(ext.Values, "Date", chaseDateFormat3, &statement.ClosingDate, dateCleanup...); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

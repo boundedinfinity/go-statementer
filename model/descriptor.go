@@ -2,10 +2,6 @@ package model
 
 import "github.com/oriser/regroup"
 
-type AccountClassifier struct {
-	Account string `yaml:"account"`
-}
-
 type FieldDescriptor struct {
 	Name string
 	Key  string

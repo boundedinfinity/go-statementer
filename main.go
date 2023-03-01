@@ -18,51 +18,51 @@ func main() {
 		return
 	}
 
-	ocrs, err := rt.LoadFiles()
+	pcs, err := rt.LoadFiles()
 
 	if err != nil {
 		handleError(err)
 		return
 	}
 
-	for _, ocr := range ocrs {
+	for _, pc := range pcs {
 		logger.Infof(util.PrintSep())
-		logger.Infof(util.PrintLabeled("Source", ocr.Stage1.Source))
+		logger.Infof(util.PrintLabeled("Source", pc.Stage1.Source))
 
-		if err := rt.CalcFiles(rt.UserConfig.WorkPath, "", &ocr.Stage1, ocr.Stage1); err != nil {
+		if err := rt.CalcFiles(rt.UserConfig.WorkPath, "", &pc.Stage1, pc.Stage1); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.OcrSingle(&ocr.Stage1); err != nil {
+		if err := rt.Ocr(&pc.Stage1); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.Process(&ocr); err != nil {
+		if err := rt.Process(&pc); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.Rename(ocr, &ocr.Stage2, ocr.Stage1); err != nil {
+		if err := rt.Rename(pc, &pc.Stage2, pc.Stage1); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.DumpYaml(&ocr); err != nil {
+		if err := rt.DumpYaml(&pc); err != nil {
 			handleError(err)
 			return
 		}
 
-		if err := rt.DumpCvs(&ocr); err != nil {
+		if err := rt.DumpCvs(&pc); err != nil {
 			handleError(err)
 			return
 		}
 
-		// if err := rt.Output(&ocr.Dest, &ocr.Stage2); err != nil {
-		// 	handleError(err)
-		// 	return
-		// }
+		if err := rt.Output(&pc.Dest, &pc.Stage2); err != nil {
+			handleError(err)
+			return
+		}
 	}
 }
 

@@ -8,3 +8,10 @@ type Transaction struct {
 	Memo   string                  `yaml:"memo"`
 	Amount float32                 `yaml:"amount"`
 }
+
+type TransactionRaw struct {
+	Number string `yaml:"number"`
+	Date   string `yaml:"date"`
+	Memo   string `yaml:"memo"`
+	Amount string `yaml:"amount"`
+}
