@@ -27,8 +27,8 @@ func (t *Runtime) Output(dst, src *model.FileSet) error {
 	return nil
 }
 
-func (t *Runtime) DumpCvs(ocr *model.ProcessContext) error {
-	file, err := os.OpenFile(ocr.Stage2.Csv, os.O_RDWR|os.O_CREATE, os.ModePerm)
+func (t *Runtime) DumpCvs(pc *model.ProcessContext) error {
+	file, err := os.OpenFile(pc.Stage2.Csv, os.O_RDWR|os.O_CREATE, os.ModePerm)
 
 	if err != nil {
 		panic(err)
@@ -36,7 +36,7 @@ func (t *Runtime) DumpCvs(ocr *model.ProcessContext) error {
 
 	defer file.Close()
 
-	txs := t.gnuCash(ocr)
+	txs := t.gnuCash(pc)
 
 	if err := gocsv.Marshal(txs, file); err != nil {
 		return err
@@ -45,20 +45,20 @@ func (t *Runtime) DumpCvs(ocr *model.ProcessContext) error {
 	return nil
 }
 
-func (t *Runtime) DumpYaml(ocr *model.ProcessContext) error {
-	name := pather.Base(ocr.Stage2.Dir)
+func (t *Runtime) DumpYaml(pc *model.ProcessContext) error {
+	name := pather.Base(pc.Stage2.Dir)
 
-	if err := t.CalcFiles(t.UserConfig.OutputPath, name, &ocr.Dest, ocr.Stage2); err != nil {
+	if err := t.CalcFiles(t.UserConfig.OutputPath, name, &pc.Dest, pc.Stage2); err != nil {
 		return err
 	}
 
-	bs, err := yaml.Marshal(ocr)
+	bs, err := yaml.Marshal(pc)
 
 	if err != nil {
 		return err
 	}
 
-	if err := ioutil.WriteFile(ocr.Stage2.Yaml, bs, 0755); err != nil {
+	if err := ioutil.WriteFile(pc.Stage2.Yaml, bs, 0755); err != nil {
 		return err
 	}
 

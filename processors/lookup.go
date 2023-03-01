@@ -24,7 +24,7 @@ func (t *ProcessManager) getUserStatementConfig(account string) (model.UserConfi
 func (t *ProcessManager) Lookup() (*model.StatementDescriptor, error) {
 	var account string
 
-	for _, item := range t.ocr.Extracted {
+	for _, item := range t.pc.Extracted {
 		if err := convertString(item.Values, "Account", &account, accountCleanup...); err == nil {
 			break
 		}
@@ -40,7 +40,7 @@ func (t *ProcessManager) Lookup() (*model.StatementDescriptor, error) {
 		return nil, fmt.Errorf("not user config found for account %v", account)
 	}
 
-	t.ocr.UserConfig = config
+	t.pc.UserConfig = config
 
 	var processor *model.StatementDescriptor
 

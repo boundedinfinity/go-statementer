@@ -8,13 +8,13 @@ import (
 type ProcessManager struct {
 	userConfig model.UserConfig
 	logger     *logrus.Logger
-	ocr        *model.ProcessContext
+	pc         *model.ProcessContext
 }
 
-func NewManager(logger *logrus.Logger, userConfig model.UserConfig, ocr *model.ProcessContext) *ProcessManager {
+func NewManager(logger *logrus.Logger, userConfig model.UserConfig, pc *model.ProcessContext) *ProcessManager {
 	return &ProcessManager{
 		logger:     logger,
 		userConfig: userConfig,
-		ocr:        ocr,
+		pc:         pc,
 	}
 }

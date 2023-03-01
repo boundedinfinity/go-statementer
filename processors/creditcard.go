@@ -37,7 +37,7 @@ func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
 func (t *ProcessManager) transformCreditCard(statement *model.CreditCardStatement) error {
 	var section []model.Transaction
 
-	for _, ext := range t.ocr.Extracted {
+	for _, ext := range t.pc.Extracted {
 		switch ext.Name {
 		case "PaymentsStart":
 			section = make([]model.Transaction, 0)

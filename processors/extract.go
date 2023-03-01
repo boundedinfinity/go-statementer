@@ -10,7 +10,7 @@ import (
 )
 
 func (t *ProcessManager) Extract(statement *model.StatementDescriptor) error {
-	file, err := os.Open(t.ocr.Stage1.Text)
+	file, err := os.Open(t.pc.Stage1.Text)
 
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (t *ProcessManager) Extract(statement *model.StatementDescriptor) error {
 				}
 			}
 
-			t.ocr.Extracted = append(t.ocr.Extracted, model.Extracted{
+			t.pc.Extracted = append(t.pc.Extracted, model.Extracted{
 				Name:   line.Name,
 				Values: groups,
 			})

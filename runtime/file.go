@@ -82,19 +82,19 @@ func (t *Runtime) CalcFiles(dir, name string, dst *model.FileSet, src model.File
 	return nil
 }
 
-func (t *Runtime) Rename(ocr model.ProcessContext, dst *model.FileSet, src model.FileSet) error {
+func (t *Runtime) Rename(pc model.ProcessContext, dst *model.FileSet, src model.FileSet) error {
 	var account string
 	var closingDate rfc3339date.Rfc3339Date
 
-	switch ocr.UserConfig.Processor {
+	switch pc.UserConfig.Processor {
 	case "chase-checking":
-		account = ocr.Checking.Account
-		closingDate = ocr.Checking.ClosingDate
+		account = pc.Checking.Account
+		closingDate = pc.Checking.ClosingDate
 	case "chase-credit-card":
-		account = ocr.CreditCard.Account
-		closingDate = ocr.CreditCard.ClosingDate
+		account = pc.CreditCard.Account
+		closingDate = pc.CreditCard.ClosingDate
 	default:
-		return fmt.Errorf("error transformer for %v", ocr.UserConfig.Account)
+		return fmt.Errorf("error transformer for %v", pc.UserConfig.Account)
 	}
 
 	name := account

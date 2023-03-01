@@ -6,16 +6,16 @@ import (
 	"github.com/boundedinfinity/docsorter/model"
 )
 
-func (t *ProcessManager) Transform(ocr *model.ProcessContext) error {
-	switch ocr.UserConfig.Processor {
+func (t *ProcessManager) Transform(pc *model.ProcessContext) error {
+	switch pc.UserConfig.Processor {
 	case "chase-checking":
-		t.ocr.Checking = model.NewCheckingStatement()
-		return t.transformChecking(&t.ocr.Checking)
+		t.pc.Checking = model.NewCheckingStatement()
+		return t.transformChecking(&t.pc.Checking)
 	case "chase-credit-card":
-		t.ocr.CreditCard = model.NewCreditCardStatement()
-		t.transformCreditCard(&t.ocr.CreditCard)
+		t.pc.CreditCard = model.NewCreditCardStatement()
+		t.transformCreditCard(&t.pc.CreditCard)
 	default:
-		return fmt.Errorf("error transformer for %v", ocr.UserConfig.Account)
+		return fmt.Errorf("error transformer for %v", pc.UserConfig.Account)
 	}
 
 	return nil

@@ -44,7 +44,7 @@ func (t *ProcessManager) getChaseChecking() *model.StatementDescriptor {
 func (t *ProcessManager) transformChecking(statement *model.CheckingStatement) error {
 	var section []model.Transaction
 
-	for _, ext := range t.ocr.Extracted {
+	for _, ext := range t.pc.Extracted {
 		switch ext.Name {
 		case "DepositsStart":
 			section = make([]model.Transaction, 0)
