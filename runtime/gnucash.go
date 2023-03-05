@@ -1,6 +1,8 @@
 package runtime
 
 import (
+	"math"
+
 	"github.com/boundedinfinity/docsorter/model"
 	"github.com/boundedinfinity/go-commoner/optioner"
 )
@@ -17,6 +19,10 @@ func (t *Runtime) gnuCash(pc *model.ProcessContext) []model.GnuCashTransaction {
 	}
 }
 
+func abs(f float32) float32 {
+	return float32(math.Abs(float64(f)))
+}
+
 func (t *Runtime) gnuCashCredit(pc *model.ProcessContext) []model.GnuCashTransaction {
 	var gtxs []model.GnuCashTransaction
 
@@ -25,7 +31,7 @@ func (t *Runtime) gnuCashCredit(pc *model.ProcessContext) []model.GnuCashTransac
 		gnucash.Date = model.GnuCashDate(conanical.Date)
 		gnucash.Description = conanical.Memo
 		gnucash.AccountName = optioner.OfZ(pc.UserConfig.Name).OrElse(model.IMPORTED_UNKOWN)
-		gnucash.Incoming = model.GnuCashFloat(conanical.Amount)
+		gnucash.Incoming = model.GnuCashFloat(abs(conanical.Amount))
 		gnucash.Notes = notes
 		gtxs = append(gtxs, gnucash)
 	}
@@ -36,7 +42,7 @@ func (t *Runtime) gnuCashCredit(pc *model.ProcessContext) []model.GnuCashTransac
 		gnucash.Date = model.GnuCashDate(conanical.Date)
 		gnucash.Description = conanical.Memo
 		gnucash.AccountName = optioner.OfZ(pc.UserConfig.Name).OrElse(model.IMPORTED_UNKOWN)
-		gnucash.Outgoing = model.GnuCashFloat(conanical.Amount)
+		gnucash.Outgoing = model.GnuCashFloat(abs(conanical.Amount))
 		gnucash.Notes = notes
 		gtxs = append(gtxs, gnucash)
 	}

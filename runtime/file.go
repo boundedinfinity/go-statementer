@@ -62,7 +62,6 @@ func (t *Runtime) CalcFiles(dir, name string, dst *model.FileSet, src model.File
 		*s = extentioner.Swap(dst.Pdf, t.extPdf, ext)
 	}
 
-	replace1(&dst.Image, t.extImage)
 	replace1(&dst.Text, t.extText)
 	replace1(&dst.Csv, t.extCsv)
 	replace1(&dst.Yaml, t.extYaml)
