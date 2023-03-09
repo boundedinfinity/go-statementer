@@ -5,7 +5,7 @@ import "github.com/boundedinfinity/docsorter/model"
 func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
 	return &model.StatementDescriptor{
 		List: []*model.LineDescriptor{
-			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+)`),
+			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+?)\s{5,}`),
 			model.NewLineWithField("OpeningBalance", `^(?P<OpeningBalance>Previous Balance)\s+`+usdPattern),
 			model.NewLineWithField("ClosingBalance", `^(?P<ClosingBalance>New Balance)\s+`+usdPattern),
 			model.NewLineWithFieldAndKey("OpeningDate", "Date", `(?P<Date>\d+/\d+/\d+) - \d+/\d+/\d+`),
@@ -17,7 +17,7 @@ func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
 			model.NewLineWithFieldAndKey("FeesCharged", "Amount", `Fees Charged\s+`+usdPattern),
 			model.NewLineWithFieldAndKey("InterestCharged", "Amount", `Interest Charged\s+`+usdPattern),
 			model.NewLineWithField("PaymentsStart", `^(?P<PaymentsStart>PAYMENTS AND OTHER CREDITS)\s*$`),
-			model.NewLineWithField("PurchasesStart", `^(?P<PurchasesStart>^PURCHASES)\s*$`),
+			model.NewLineWithField("PurchasesStart", `^(?P<PurchasesStart>^PURCHASES?)\s*$`),
 			model.NewLineWithField("PurchasesAndRedemptionsStart", `^(?P<PurchasesAndRedemptionsStart>PURCHASES AND REDEMPTIONS)\s*$`),
 			model.NewLineWithField("ImportantNews", `(?P<ImportantNews>IMPORTANT NEWS)\s*`),
 			model.NewLine(

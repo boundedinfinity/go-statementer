@@ -5,7 +5,7 @@ import "github.com/boundedinfinity/docsorter/model"
 func (t *ProcessManager) GetClassifier() (*model.StatementDescriptor, error) {
 	return &model.StatementDescriptor{
 		List: []*model.LineDescriptor{
-			model.NewLineWithField("Account", `Account\sNumber:\s*_?(?P<Account>[\d\s]+)`),
+			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+?)\s{5,}`),
 		},
 	}, nil
 }
