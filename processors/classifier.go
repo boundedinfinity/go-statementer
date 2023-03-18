@@ -3,11 +3,15 @@ package processors
 import "github.com/boundedinfinity/docsorter/model"
 
 func (t *ProcessManager) GetClassifier() (*model.StatementDescriptor, error) {
-	return &model.StatementDescriptor{
-		List: []*model.LineDescriptor{
-			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+?)\s{5,}`),
-		},
-	}, nil
+	desc := model.StatementDescriptor{
+		List: make([]*model.LineDescriptor, 0),
+	}
+
+	for _, pattern := range accountPatterns {
+		desc.List = append(desc.List, model.NewLineWithField("Account", pattern))
+	}
+
+	return &desc, nil
 }
 
 // # -   name: chase-credit-card

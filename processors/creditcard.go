@@ -3,9 +3,8 @@ package processors
 import "github.com/boundedinfinity/docsorter/model"
 
 func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
-	return &model.StatementDescriptor{
+	desc := model.StatementDescriptor{
 		List: []*model.LineDescriptor{
-			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+?)\s{5,}`),
 			model.NewLineWithField("OpeningBalance", `^(?P<OpeningBalance>Previous Balance)\s+`+usdPattern),
 			model.NewLineWithField("ClosingBalance", `^(?P<ClosingBalance>New Balance)\s+`+usdPattern),
 			model.NewLineWithFieldAndKey("OpeningDate", "Date", `(?P<Date>\d+/\d+/\d+) - \d+/\d+/\d+`),
@@ -32,6 +31,12 @@ func (t *ProcessManager) getCreditCard() *model.StatementDescriptor {
 			),
 		},
 	}
+
+	for _, pattern := range accountPatterns {
+		desc.List = append(desc.List, model.NewLineWithField("Account", pattern))
+	}
+
+	return &desc
 }
 
 func (t *ProcessManager) transformCreditCard(statement *model.CreditCardStatement) error {

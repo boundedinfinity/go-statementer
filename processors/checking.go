@@ -5,9 +5,8 @@ import (
 )
 
 func (t *ProcessManager) getChaseChecking() *model.StatementDescriptor {
-	return &model.StatementDescriptor{
+	desc := model.StatementDescriptor{
 		List: []*model.LineDescriptor{
-			model.NewLineWithField("Account", `Account\sNumber:\s*(?P<Account>[\d\s]+?)\s{5,}`),
 			model.NewLineWithFieldAndKey("OpeningBalance", "Amount", `^Beginning Balance\s+`+usdPattern),
 			model.NewLineWithFieldAndKey("OpeningDate", "Date", `(?P<Date>\w+\s+\d+,\s+\d+)\s+through`),
 			model.NewLineWithFieldAndKey("ClosingDate", "Date", `through\s+(?P<Date>\w+\s+\d+,\s+\d+)`),
@@ -39,6 +38,12 @@ func (t *ProcessManager) getChaseChecking() *model.StatementDescriptor {
 			),
 		},
 	}
+
+	for _, pattern := range accountPatterns {
+		desc.List = append(desc.List, model.NewLineWithField("Account", pattern))
+	}
+
+	return &desc
 }
 
 func (t *ProcessManager) transformChecking(statement *model.CheckingStatement) error {

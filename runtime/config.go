@@ -3,6 +3,7 @@ package runtime
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/boundedinfinity/go-commoner/environmenter"
 	"github.com/boundedinfinity/go-commoner/extentioner"
@@ -30,7 +31,7 @@ func (t *Runtime) LoadUserConfig(path string) error {
 		DisableTimestamp: true,
 	})
 
-	switch t.UserConfig.LogLevel {
+	switch strings.ToLower(t.UserConfig.LogLevel) {
 	case "info":
 		t.logger.SetLevel(logrus.InfoLevel)
 	case "debug":

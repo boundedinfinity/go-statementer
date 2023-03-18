@@ -19,9 +19,15 @@ var (
 	chaseDateFormat2   = "01/02/2006"
 	chaseDateFormat3   = "01/02/06"
 
+	accountPatterns = []string{
+		`Account\sNumber:\s*(?P<Account>[\d\s]+?)(?:\s{5,}?)`,
+		`Account\sNumber:\s*(?P<Account>[\d\s]+?)$`,
+	}
+
 	openingDatePatterns = []string{
 		`Opening/Closing Date\s+(?P<date>\d+/\d+/\d+)\s-\s\d+/\d+/\d+`,
 	}
+
 	closingDatePatterns = []string{
 		`Opening/Closing Date\s+\d+/\d+/\d+\s-\s(?P<date>\d+/\d+/\d+)`,
 	}
