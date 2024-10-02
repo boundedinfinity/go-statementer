@@ -1,71 +1,34 @@
 package runtime
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
-	"strings"
 
-	"github.com/boundedinfinity/go-commoner/environmenter"
-	"github.com/boundedinfinity/go-commoner/extentioner"
-	"github.com/boundedinfinity/go-commoner/slicer"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	"github.com/boundedinfinity/go-commoner/idiomatic/environmenter"
+	"github.com/boundedinfinity/go-commoner/idiomatic/pather"
 )
 
-func (t *Runtime) LoadUserConfig(path string) error {
-	bs, err := os.ReadFile(path)
+func (this *Runtime) LoadConfig() error {
+	ev := environmenter.New()
 
+	if err := ev.Process(); err != nil {
+		return err
+	}
+
+	this.configPath = ev.Substitue(this.configPath)
+
+	data, err := os.ReadFile(this.configPath)
 	if err != nil {
 		return err
 	}
 
-	if err := yaml.Unmarshal(bs, &t.UserConfig); err != nil {
+	if err := json.Unmarshal(data, &this.config); err != nil {
 		return err
 	}
 
-	if err := t.normalizeUserConfig(); err != nil {
-		return err
-	}
-
-	t.logger.SetFormatter(&logrus.TextFormatter{
-		DisableTimestamp: true,
-	})
-
-	switch strings.ToLower(t.UserConfig.LogLevel) {
-	case "info":
-		t.logger.SetLevel(logrus.InfoLevel)
-	case "debug":
-		t.logger.SetLevel(logrus.DebugLevel)
-	case "trace":
-		t.logger.SetLevel(logrus.TraceLevel)
-	default:
-		return fmt.Errorf("invalid log level: %v", t.UserConfig.LogLevel)
-	}
-
-	return nil
-}
-
-func (t *Runtime) normalizeUserConfig() error {
-	t.UserConfig.InputPaths = slicer.Map(t.UserConfig.InputPaths, func(path string) string {
-		return environmenter.Sub(path)
-	})
-
-	t.UserConfig.OutputPath = environmenter.Sub(t.UserConfig.OutputPath)
-	t.UserConfig.WorkPath = environmenter.Sub(t.UserConfig.WorkPath)
-	t.UserConfig.SumExt = extentioner.Normalize(t.UserConfig.SumExt)
-	t.UserConfig.InputExt = extentioner.Normalize(t.UserConfig.InputExt)
-
-	if t.UserConfig.LogLevel == "" {
-		t.UserConfig.LogLevel = "info"
-	}
-
-	if t.UserConfig.IgnorePaths == nil {
-		t.UserConfig.IgnorePaths = make([]string, 0)
-	}
-
-	for _, p := range t.UserConfig.IgnorePaths {
-		t.UserConfig.IgnorePaths = append(t.UserConfig.IgnorePaths, environmenter.Sub(p))
-	}
+	this.config.SourceDir = ev.Substitue(this.config.SourceDir)
+	this.config.ProcessedDir = ev.Substitue(this.config.ProcessedDir)
+	this.statePath = pather.Paths.Join(this.config.ProcessedDir, "state.json")
 
 	return nil
 }

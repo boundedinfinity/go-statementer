@@ -1,5 +1,5 @@
-docsorter
+go-statementer
 *.pdf
 *-/
-config.yaml
-__debug_bin
+__debug_bin*
+tmp/

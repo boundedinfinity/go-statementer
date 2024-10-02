@@ -1,0 +1,31 @@
+package web
+
+templ home() {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta
+				name="description"
+				content="Bounded Infinity Statement Management System"
+			/>
+			<meta name="google" content="notranslate"/>
+			<link rel="shortcut icon" href="/img/gopher-svgrepo-com.svg" type="image/svg+xml"/>
+			<link href="/css/daisyui.min.css" rel="stylesheet"/>
+			<link href="/css/styles.css" rel="stylesheet" type="text/css"/>
+			<script src="/js/tailwind.min.js"></script>
+			<script src="/js/htmx.min.js"></script>
+			<title>Bounded Infinity : Statement Management System</title>
+		</head>
+		<body hx-boost="true" class="p-4">
+			<div class="p-2 border-2 border-r-2 border-slate-600">
+				<button hx-get="/files/list" hx-target="#results" class="btn btn-primary btn-outline">Load</button>
+			</div>
+			<div id="results" class="p-2 border-2 border-r-2 border-slate-600 mt-2">
+				Loading...
+			</div>
+		</body>
+	</html>
+}

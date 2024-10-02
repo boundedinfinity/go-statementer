@@ -1,0 +1,24 @@
+package web
+
+import "github.com/boundedinfinity/statementer/model"
+
+templ filesList(files model.FileDescriptors) {
+	<div class="overflow-x-auto">
+		<table class="table table-zebra table-pin-rows">
+			<thead class="font-semibold">
+				<tr>
+					<th>Source Directory</th>
+					<th>File Size</th>
+				</tr>
+			</thead>
+			<tbody class="font-semibold">
+				for _, file := range files {
+					<tr>
+						<td>{ file.SourcePath }</td>
+						<td>{ file.Size.Human() }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

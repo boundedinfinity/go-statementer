@@ -1,47 +1,39 @@
 package runtime
 
 import (
-	"github.com/boundedinfinity/docsorter/model"
-	"github.com/boundedinfinity/docsorter/processors"
+	"io/fs"
+	"path/filepath"
+
+	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 )
 
-func (t *Runtime) Process(pc *model.ProcessContext) error {
-	manager := processors.NewManager(t.logger, t.UserConfig, pc)
-	classifier, err := manager.GetClassifier()
+func (this *Runtime) walkSource(fn func(path string, info fs.FileInfo, err error) error) error {
+	return filepath.Walk(this.config.SourceDir, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
 
-	if err != nil {
-		return err
-	}
+		if stringer.StartsWith(path, this.config.ProcessedDir) {
+			return nil
+		}
 
-	if err := manager.Init(classifier); err != nil {
-		return err
-	}
+		var validExt bool
 
-	if err := manager.Extract(classifier); err != nil {
-		return err
-	}
+		for _, ext := range this.config.AllowedExts {
+			if stringer.EndsWith(path, ext) {
+				validExt = true
+				break
+			}
+		}
 
-	if err != nil {
-		return err
-	}
+		if !validExt {
+			return nil
+		}
 
-	statement, err := manager.Lookup()
+		if err := fn(path, info, err); err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
-	}
-
-	if err := manager.Init(statement); err != nil {
-		return err
-	}
-
-	if err := manager.Extract(statement); err != nil {
-		return err
-	}
-
-	if err := manager.Transform(pc); err != nil {
-		return err
-	}
-
-	return nil
+		return nil
+	})
 }

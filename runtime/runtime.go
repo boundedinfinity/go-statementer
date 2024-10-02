@@ -1,27 +1,22 @@
+// Package runtime the runtime
 package runtime
 
 import (
-	"github.com/boundedinfinity/docsorter/model"
+	"github.com/boundedinfinity/statementer/model"
 	"github.com/sirupsen/logrus"
 )
 
-func New(logger *logrus.Logger) Runtime {
-	return Runtime{
-		extPdf:   ".pdf",
-		extImage: ".png",
-		extText:  ".txt",
-		extCsv:   ".csv",
-		extYaml:  ".yaml",
-		logger:   logger,
+func New(logger *logrus.Logger, configPath string) *Runtime {
+	return &Runtime{
+		logger:     logger,
+		configPath: configPath,
 	}
 }
 
 type Runtime struct {
-	UserConfig model.UserConfig
+	configPath string
+	config     model.Config
+	statePath  string
+	state      model.State
 	logger     *logrus.Logger
-	extPdf     string
-	extImage   string
-	extText    string
-	extCsv     string
-	extYaml    string
 }

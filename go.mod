@@ -1,22 +1,28 @@
-module github.com/boundedinfinity/docsorter
+module github.com/boundedinfinity/statementer
 
-go 1.18
+go 1.22.6
 
 require (
-	github.com/boundedinfinity/go-commoner v1.0.23
-	github.com/boundedinfinity/rfc3339date v1.0.1
-	github.com/oriser/regroup v0.0.0-20210730155327-fca8d7531263
-	gopkg.in/yaml.v3 v3.0.1
+	github.com/boundedinfinity/go-commoner v1.0.37
+	github.com/boundedinfinity/rfc3339date v1.0.7
+	github.com/sirupsen/logrus v1.9.3
 )
 
 require (
-	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/gocarina/gocsv v0.0.0-20230123225133-763e25b40669 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	github.com/a-h/templ v0.2.778 // indirect
+	github.com/andybalholm/brotli v1.1.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/gofiber/fiber/v2 v2.52.5 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/boundedinfinity/commons => ../commons
-
-replace github.com/boundedinfinity/rfc3339date => ../rfc3339date
