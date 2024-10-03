@@ -21,7 +21,8 @@ templ home() {
 		</head>
 		<body hx-boost="true" class="p-4">
 			<div class="p-2 border-2 border-r-2 border-slate-600">
-				<button hx-get="/files/list" hx-target="#results" class="btn btn-primary btn-outline">Load</button>
+				<button hx-get="/files/list" hx-target="#results" class="btn btn-primary btn-outline">All Files</button>
+				<button hx-get="/files/duplicates" hx-target="#results" class="btn btn-primary btn-outline">Duplicate Files</button>
 			</div>
 			<div id="results" class="p-2 border-2 border-r-2 border-slate-600 mt-2">
 				Loading...

@@ -1,6 +1,9 @@
 package model
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/google/uuid"
@@ -13,16 +16,72 @@ func NewFileDescriptor() *FileDescriptor {
 	}
 }
 
+var (
+	ErrFileDescriptorErr = errors.New("file descriptor error")
+)
+
+type ErrFileDescriptorDetails struct {
+	msg   string
+	files []*FileDescriptor
+}
+
+func (e ErrFileDescriptorDetails) Error() string {
+	lines := []string{ErrFileDescriptorErr.Error(), e.msg}
+
+	var names []string
+
+	if len(e.files) > 0 {
+		for _, file := range e.files {
+			names = append(names, file.SourcePaths...)
+		}
+
+		lines = append(lines, fmt.Sprintf("files - %s", stringer.Join(", ", names...)))
+	}
+
+	return stringer.Join(" : ", lines...)
+}
+
+func (this ErrFileDescriptorDetails) Unwrap() error {
+	return ErrFileDescriptorErr
+}
+
 type FileDescriptor struct {
-	Id         uuid.UUID   `json:"id" yaml:"id"`
-	Title      string      `json:"title" yaml:"title"`
-	SourcePath string      `json:"source-path" yaml:"source-path"`
-	RepoPath   string      `json:"repo-path" yaml:"repo-path"`
-	Size       Size        `json:"size" yaml:"size"`
-	Extention  string      `json:"extention" yaml:"extention"`
-	Labels     Labels      `json:"labels" yaml:"labels"`
-	DateLabels []DateLabel `json:"date-labels" yaml:"date-labels"`
-	Hash       string      `json:"hash" yaml:"hash"`
+	Id          uuid.UUID   `json:"id" yaml:"id"`
+	Title       string      `json:"title" yaml:"title"`
+	SourcePaths []string    `json:"source-path" yaml:"source-path"`
+	RepoPath    string      `json:"repo-path" yaml:"repo-path"`
+	Size        Size        `json:"size" yaml:"size"`
+	Extention   string      `json:"extention" yaml:"extention"`
+	Labels      Labels      `json:"labels" yaml:"labels"`
+	DateLabels  []DateLabel `json:"date-labels" yaml:"date-labels"`
+	Hash        string      `json:"hash" yaml:"hash"`
+}
+
+func (this *FileDescriptor) Merge(that *FileDescriptor) error {
+	if this.Hash == "" {
+		return &ErrFileDescriptorDetails{
+			msg:   "missing hash",
+			files: []*FileDescriptor{this},
+		}
+	}
+
+	if that.Hash == "" {
+		return &ErrFileDescriptorDetails{
+			msg:   "missing hash",
+			files: []*FileDescriptor{that},
+		}
+	}
+
+	if this.Hash != that.Hash {
+		return &ErrFileDescriptorDetails{
+			msg:   "hashes do not match",
+			files: []*FileDescriptor{this, that},
+		}
+	}
+
+	this.SourcePaths = append(this.SourcePaths, that.SourcePaths...)
+
+	return nil
 }
 
 func fileTitleFilter(file *FileDescriptor, text string) bool {
@@ -30,7 +89,9 @@ func fileTitleFilter(file *FileDescriptor, text string) bool {
 }
 
 func fileSourcePathFilter(file *FileDescriptor, text string) bool {
-	return stringer.Contains(file.SourcePath, text)
+	return slicer.ContainsFn(func(_ int, path string) bool {
+		return stringer.Contains(path, text)
+	}, file.SourcePaths...)
 }
 
 func fileExtentionFilter(file *FileDescriptor, text string) bool {

@@ -32,6 +32,8 @@ func (this *Web) Init() error {
 
 	this.fiber.Get("/", this.handleHome())
 	this.fiber.Get("/files/list", this.handleFilesList())
+	this.fiber.Get("/files/duplicates", this.handleFilesDuplistList())
+	this.fiber.Get("/files/merge", this.handleFilesDuplistList())
 
 	return nil
 }
@@ -45,5 +47,9 @@ func (this *Web) handleHome() func(*fiber.Ctx) error {
 }
 
 func (this *Web) handleFilesList() func(*fiber.Ctx) error {
-	return this.handler(filesList(this.runtime.Files()))
+	return this.handler(filesList(this.runtime.FilesAll()))
+}
+
+func (this *Web) handleFilesDuplistList() func(*fiber.Ctx) error {
+	return this.handler(filesDuplicates(this.runtime.FilesDuplicates()))
 }

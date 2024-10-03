@@ -10,6 +10,8 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/extentioner"
+	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
+	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/model"
 	"github.com/google/uuid"
 )
@@ -33,12 +35,32 @@ func fileHash(path string) (string, error) {
 }
 
 func (this *Runtime) HashSource(file *model.FileDescriptor) error {
-	hash, err := fileHash(file.SourcePath)
-	if err != nil {
-		return err
+	var hashes []string
+
+	for _, path := range file.SourcePaths {
+		hash, err := fileHash(path)
+		if err != nil {
+			return err
+		}
+
+		hashes = append(hashes, hash)
 	}
 
-	file.Hash = hash
+	if len(hashes) > 1 {
+		head, _ := slicer.Head(hashes...)
+		tail, _ := slicer.Tail(hashes...)
+
+		for _, hash := range tail {
+			if head != hash {
+				return fmt.Errorf(
+					"hashes don't match: %s",
+					stringer.Join(", ", file.SourcePaths...),
+				)
+			}
+		}
+	}
+
+	file.Hash = hashes[0]
 	return nil
 }
 
@@ -50,7 +72,7 @@ func (this *Runtime) WalkSource() error {
 		switch len(found) {
 		case 0:
 			file = model.NewFileDescriptor()
-			file.SourcePath = path
+			file.SourcePaths = []string{path}
 			file.Id = uuid.New()
 			this.state.Files = append(this.state.Files, file)
 		case 1:
@@ -80,15 +102,10 @@ func (this *Runtime) WalkSource() error {
 	return nil
 }
 
-func (this *Runtime) ShowDups() {
-	for hash, files := range this.state.Files.Duplicates() {
-		fmt.Println(hash + ":")
-		for _, file := range files {
-			fmt.Printf("\t%s: Size: %s\n", file.SourcePath, file.Size.Human())
-		}
-	}
+func (this *Runtime) FilesDuplicates() map[string][]*model.FileDescriptor {
+	return this.state.Files.Duplicates()
 }
 
-func (this *Runtime) Files() model.FileDescriptors {
+func (this *Runtime) FilesAll() model.FileDescriptors {
 	return this.state.Files
 }
