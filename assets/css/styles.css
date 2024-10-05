@@ -587,12 +587,12 @@ video {
   height: min-content;
 }
 
-.w-full {
-  width: 100%;
+.w-3\/4 {
+  width: 75%;
 }
 
-.max-w-xs {
-  max-width: 20rem;
+.w-full {
+  width: 100%;
 }
 
 .grid-cols-2 {
@@ -601,6 +601,10 @@ video {
 
 .justify-end {
   justify-content: flex-end;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
 
 .gap-2 {

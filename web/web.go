@@ -121,6 +121,7 @@ func (this *Web) handleFilesDetails() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		files := this.runtime.FileGet(id)
+
 		if len(files) == 1 {
 			return Render(c, filesDetails(files[0]))
 		}
@@ -133,9 +134,18 @@ func (this *Web) handleFilesUpdate() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		title := c.FormValue("title")
+		files := this.runtime.State.Files.ById(id)
 
-		log.Printf("ID: %s, TITLE: %s", id, title)
+		if len(files) == 1 {
+			files[0].Title = title
+		}
 
+		if err := this.runtime.SaveState(); err != nil {
+			log.Println(err.Error())
+		}
+
+		c.Response().Header.Add("HX-Trigger", "file-updated")
+		c.Response().Header.Add("HX-Trigger", attrId("file-updated", files[0].Id.String()))
 		return nil
 	}
 }

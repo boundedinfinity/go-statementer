@@ -19,7 +19,7 @@ templ home() {
 			<script src="/js/htmx.min.js"></script>
 			<title>Bounded Infinity : Statement Management System</title>
 		</head>
-		<body hx-boost="true" hx-get="/files/list" hx-trigger="load" hx-target="#results" class="p-4" >
+		<body hx-boost="true" hx-get="/files/list" hx-trigger="load,file-updated" hx-target="#results" class="p-4" >
 			<div height="95vh">
 				<div class="p-2 border-2 border-r-2 border-slate-600">
 					<button hx-get="/open/processed-dir" hx-target="#stdout" class="btn btn-primary btn-outline">Open Processed Dir</button>

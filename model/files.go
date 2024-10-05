@@ -46,15 +46,16 @@ func (this ErrFileDescriptorDetails) Unwrap() error {
 }
 
 type FileDescriptor struct {
-	Id          uuid.UUID   `json:"id" yaml:"id"`
-	Title       string      `json:"title" yaml:"title"`
-	SourcePaths []string    `json:"source-path" yaml:"source-path"`
-	RepoPath    string      `json:"repo-path" yaml:"repo-path"`
-	Size        Size        `json:"size" yaml:"size"`
-	Extention   string      `json:"extention" yaml:"extention"`
-	Labels      Labels      `json:"labels" yaml:"labels"`
-	DateLabels  []DateLabel `json:"date-labels" yaml:"date-labels"`
-	Hash        string      `json:"hash" yaml:"hash"`
+	Id          uuid.UUID    `json:"id" yaml:"id"`
+	Title       string       `json:"title" yaml:"title"`
+	SourcePaths []string     `json:"source-path" yaml:"source-path"`
+	RepoPath    string       `json:"repo-path" yaml:"repo-path"`
+	Size        Size         `json:"size" yaml:"size"`
+	Extention   string       `json:"extention" yaml:"extention"`
+	Labels      Labels       `json:"labels" yaml:"labels"`
+	DateLabels  []DateLabel  `json:"date-labels" yaml:"date-labels"`
+	ValueLabels []ValueLabel `json:"value-labels" yaml:"value-labels"`
+	Hash        string       `json:"hash" yaml:"hash"`
 }
 
 func (this *FileDescriptor) Merge(that *FileDescriptor) error {

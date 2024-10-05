@@ -10,38 +10,25 @@ import (
 	"github.com/google/uuid"
 )
 
+// =====================================================================================
 // Label
+// =====================================================================================
 
-func NewFromLabel(label Label) *Label {
-	return &Label{
+func NewFromLabel(label SimpleLabel) *SimpleLabel {
+	return &SimpleLabel{
 		Name:        label.Name,
 		Description: label.Description,
 	}
 }
 
-type Label struct {
+type SimpleLabel struct {
 	Id          uuid.UUID `json:"id" yaml:"id"`
 	Name        string    `json:"name" yaml:"name"`
 	Description string    `json:"description" yaml:"description"`
 	Count       int       `json:"-" yaml:"-"`
 }
 
-var ErrLabelValidation = errors.New("label validation error")
-
-type ErrLabelValidationDetails struct {
-	message string
-	label   Label
-}
-
-func (this ErrLabelValidationDetails) Error() string {
-	return fmt.Sprintf("%s : %s : %v", ErrFileDescriptorErr.Error(), this.message, this.label)
-}
-
-func (this ErrLabelValidationDetails) Unwrap() error {
-	return ErrLabelValidation
-}
-
-func (this Label) Validate() error {
+func (this SimpleLabel) Validate() error {
 	if len(this.Name) < 2 {
 		return &ErrLabelValidationDetails{
 			message: "label.Name must be greater than 2 characters",
@@ -59,37 +46,79 @@ func (this Label) Validate() error {
 	return nil
 }
 
-func labelNameFilter(label *Label, text string) bool {
+func labelNameFilter(label *SimpleLabel, text string) bool {
 	return stringer.Contains(label.Name, text)
 }
 
-func labelDescriptionFilter(label *Label, text string) bool {
+func labelDescriptionFilter(label *SimpleLabel, text string) bool {
 	return stringer.Contains(label.Description, text)
 }
 
+// =====================================================================================
+// Label Errors
+// =====================================================================================
+
+var ErrLabelValidation = errors.New("label validation error")
+
+type ErrLabelValidationDetails struct {
+	message string
+	label   SimpleLabel
+}
+
+func (this ErrLabelValidationDetails) Error() string {
+	return fmt.Sprintf("%s : %s : %v", ErrFileDescriptorErr.Error(), this.message, this.label)
+}
+
+func (this ErrLabelValidationDetails) Unwrap() error {
+	return ErrLabelValidation
+}
+
+// =====================================================================================
 // DateLabel
+// =====================================================================================
 
 type DateLabel struct {
-	*Label
+	*SimpleLabel
 	Date rfc3339date.Rfc3339Date `json:"date" yaml:"date"`
 }
 
-func DateLabels2Labels(datedLabels []DateLabel) []*Label {
-	var labels []*Label
+func DateLabels2Labels(datedLabels []DateLabel) []*SimpleLabel {
+	var labels []*SimpleLabel
 
 	for _, datedLabel := range datedLabels {
-		labels = append(labels, datedLabel.Label)
+		labels = append(labels, datedLabel.SimpleLabel)
 	}
 
 	return labels
 }
 
+// =====================================================================================
+// ValueLabel
+// =====================================================================================
+
+type ValueLabel struct {
+	*SimpleLabel
+	Value string `json:"value" yaml:"value"`
+}
+
+func ValueLabel2Labels(datedLabels []ValueLabel) []*SimpleLabel {
+	var labels []*SimpleLabel
+
+	for _, datedLabel := range datedLabels {
+		labels = append(labels, datedLabel.SimpleLabel)
+	}
+
+	return labels
+}
+
+// =====================================================================================
 // Labels
+// =====================================================================================
 
-type Labels []*Label
+type Labels []*SimpleLabel
 
-func (this Labels) filter(text string, fns ...func(*Label, string) bool) []*Label {
-	var found []*Label
+func (this Labels) filter(text string, fns ...func(*SimpleLabel, string) bool) []*SimpleLabel {
+	var found []*SimpleLabel
 
 	for _, label := range this {
 		for _, fn := range fns {
@@ -102,7 +131,7 @@ func (this Labels) filter(text string, fns ...func(*Label, string) bool) []*Labe
 	return found
 }
 
-func (this Labels) contains(text string, fns ...func(*Label, string) bool) bool {
+func (this Labels) contains(text string, fns ...func(*SimpleLabel, string) bool) bool {
 	var found bool
 
 	for _, label := range this {
@@ -117,93 +146,53 @@ func (this Labels) contains(text string, fns ...func(*Label, string) bool) bool 
 	return found
 }
 
-func (this Labels) ByName(text string) []*Label {
+func (this Labels) ByName(text string) []*SimpleLabel {
 	return this.filter(text, labelNameFilter)
 }
 
-func (this Labels) ByDescription(text string) []*Label {
+func (this Labels) ByDescription(text string) []*SimpleLabel {
 	return this.filter(text, labelDescriptionFilter)
 }
 
-func (this Labels) ByTerm(text string) []*Label {
+func (this Labels) ByTerm(text string) []*SimpleLabel {
 	return this.filter(text, labelNameFilter, labelDescriptionFilter)
 }
 
-// LabelMap
-
-type LabelMap map[string]*Label
-
-func (this *LabelMap) Reset() {
-	*this = map[string]*Label{}
-}
-
-func (this LabelMap) Update(labels ...*Label) {
-	for _, label := range labels {
-		if _, ok := this[label.Name]; !ok {
-			this[label.Name] = NewFromLabel(*label)
-			this[label.Name].Count = 1
-		} else {
-			this[label.Name].Count++
-		}
-	}
-}
-
-func (this LabelMap) filter(text string, fns ...func(*Label, string) bool) []*Label {
-	var found []*Label
-
-	for _, label := range this {
-		for _, fn := range fns {
-			if fn(label, text) {
-				found = append(found, label)
-			}
-		}
-
-	}
-
-	return found
-}
-
-func (this LabelMap) ByName(text string) []*Label {
-	return this.filter(text, labelNameFilter)
-}
-
-func (this LabelMap) ByDescription(text string) []*Label {
-	return this.filter(text, labelDescriptionFilter)
-}
-
+// =====================================================================================
 // LabelManager
+// =====================================================================================
 
 func NewLabelManager() *LabelManager {
 	return &LabelManager{
-		byId:   map[string]*Label{},
-		byName: map[string]*Label{},
+		byId:   map[string]*SimpleLabel{},
+		byName: map[string]*SimpleLabel{},
 	}
 }
 
 type LabelManager struct {
-	byId   map[string]*Label
-	byName map[string]*Label
+	byId   map[string]*SimpleLabel
+	byName map[string]*SimpleLabel
 }
 
 func (this *LabelManager) All() Labels {
 	return mapper.Values(this.byId)
 }
 
-func (this *LabelManager) New(name, description string) (*Label, error) {
-	return this.Add(&Label{Name: name, Description: description})
+func (this *LabelManager) New(name, description string) (*SimpleLabel, error) {
+	return this.Add(&SimpleLabel{Name: name, Description: description})
 }
 
 var ErrLabelManagerErr = errors.New("label manager error")
 
-func (this *LabelManager) ById(id uuid.UUID) *Label {
+func (this *LabelManager) ById(id uuid.UUID) *SimpleLabel {
 	return this.byId[id.String()]
 }
 
-func (this *LabelManager) ByName(id uuid.UUID) *Label {
+func (this *LabelManager) ByName(id uuid.UUID) *SimpleLabel {
 	return this.byId[id.String()]
 }
 
-func (this *LabelManager) Add(labels ...*Label) (*Label, error) {
+func (this *LabelManager) Add(labels ...*SimpleLabel) (*SimpleLabel, error) {
 	for _, label := range labels {
 		if current, err := this.add(label); err != nil {
 			return current, err
@@ -213,12 +202,12 @@ func (this *LabelManager) Add(labels ...*Label) (*Label, error) {
 	return nil, nil
 }
 
-func (this *LabelManager) add(label *Label) (*Label, error) {
+func (this *LabelManager) add(label *SimpleLabel) (*SimpleLabel, error) {
 	if err := label.Validate(); err != nil {
 		return nil, NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
 	}
 
-	var found *Label
+	var found *SimpleLabel
 	var ok bool
 
 	if !uuidIsZero(label.Id) {

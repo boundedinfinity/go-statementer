@@ -1,12 +1,14 @@
 package web
 
-import (
-	"fmt"
-	"github.com/boundedinfinity/statementer/model"
-)
+import "github.com/boundedinfinity/statementer/model"
 
 templ filesDetails(file *model.FileDescriptor) {
-	<div class="card bg-base-100 w-full shadow-xl">
+	<div
+		class="card bg-base-100 w-full shadow-xl"
+		hx-trigger={ attrId("file-updated", file.Id.String()) }
+		hx-get={ attrPath("/files/details", file.Id.String()) }
+		hx-target="#details"
+	>
 		<div class="card-body">
 			<h2 class="card-title">
 				if file.Title == "" {
@@ -16,12 +18,13 @@ templ filesDetails(file *model.FileDescriptor) {
 				}
 			</h2>
 			<div id="file-title" class="hidden border border-r-2 border-slate-400 m-2 p-2">
-				<form hx-patch={ fmt.Sprintf("/files/details/%s", file.Id) }>
+				<form hx-patch={ attrPath("/files/details", file.Id.String()) } class="flex justify-between">
 					<input
 						name="title"
 						type="text"
 						placeholder="Title goes here..."
-						class="input input-bordered input-warning w-full max-w-xs"
+						class="input input-bordered input-warning w-3/4"
+						value={ file.Title }
 					/>
 					<button type="submit">Save</button>
 				</form>
@@ -72,7 +75,7 @@ templ filesDetails(file *model.FileDescriptor) {
 					Edit Title
 				</button>
 				<button
-					hx-get={ fmt.Sprintf("/open/document/%s", file.Id) }
+					hx-get={ attrPath("/open/document", file.Id.String()) }
 					hx-target="#document"
 					class="btn btn-primary btn-outline"
 				>
@@ -94,7 +97,7 @@ templ fileSourcePaths(file *model.FileDescriptor) {
 templ filesList(files model.FileDescriptors) {
 	<div class="overflow-x-auto">
 		<table class="table table-zebra table-pin-rows">
-			<caption class="font-bold text-2xl">All Files ({ fmt.Sprintf("%d", len(files)) })</caption>
+			<caption class="font-bold text-2xl">All Files ({ print("%d", len(files)) })</caption>
 			<thead class="font-semibold">
 				<tr>
 					<th>Source Directory</th>
@@ -111,17 +114,11 @@ templ filesList(files model.FileDescriptors) {
 						</td>
 						<td>{ file.Size.Human() }</td>
 						<td>
-							<button
-								hx-get={ fmt.Sprintf("/open/document/%s", file.Id) }
-								hx-target="#document"
-								class="btn btn-primary btn-outline"
-							>
-								View
-							</button>
+							@openDocumentButton(file.Id.String())
 						</td>
 						<td>
 							<button
-								hx-get={ fmt.Sprintf("/files/details/%s", file.Id) }
+								hx-get={ attrPath("/files/details", file.Id.String()) }
 								hx-target="#details"
 								class="btn btn-primary btn-outline"
 							>
@@ -138,7 +135,7 @@ templ filesList(files model.FileDescriptors) {
 templ filesDuplicates(fileMap map[string][]*model.FileDescriptor) {
 	<div class="overflow-x-auto">
 		<table class="table table-zebra table-pin-rows">
-			<caption class="font-bold text-2xl">Duplicate Files ({ fmt.Sprintf("%d", len(fileMap)) })</caption>
+			<caption class="font-bold text-2xl">Duplicate Files ({ print("%d", len(fileMap)) })</caption>
 			<thead class="font-semibold">
 				<tr>
 					<th>Source Directory</th>
@@ -152,12 +149,16 @@ templ filesDuplicates(fileMap map[string][]*model.FileDescriptor) {
 						<td>
 							for _, file := range files {
 								for _, path := range file.SourcePaths {
-									<p>{ path }</p>
+									<div>
+										<p>{ path }</p>
+									</div>
 								}
+
+								@openDocumentButton(file.Id.String())
 							}
 						</td>
 						<td>
-							{ fmt.Sprintf("%d", len(files)) }
+							{ print("%d", len(files)) }
 						</td>
 						<td>
 							<button hx-get="/files/duplicates" hx-target="#results" class="btn btn-primary btn-outline">Merge</button>
