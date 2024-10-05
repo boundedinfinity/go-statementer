@@ -7,4 +7,5 @@ type Config struct {
 	AllowedExts  []string `json:"allowed-exts" yaml:"allowed-exts"`
 	Labels       []Label  `json:"labels" yaml:"labels"`
 	DateLabels   []Label  `json:"date-labels" yaml:"date-labels"`
+	Debug        bool     `json:"debug" yaml:"debug"`
 }

@@ -1,0 +1,170 @@
+package web
+
+import (
+	"fmt"
+	"github.com/boundedinfinity/statementer/model"
+)
+
+templ filesDetails(file *model.FileDescriptor) {
+	<div class="card bg-base-100 w-full shadow-xl">
+		<div class="card-body">
+			<h2 class="card-title">
+				if file.Title == "" {
+					[UNTITLED]
+				} else {
+					{ file.Title }
+				}
+			</h2>
+			<div id="file-title" class="hidden border border-r-2 border-slate-400 m-2 p-2">
+				<form hx-patch={ fmt.Sprintf("/files/details/%s", file.Id) }>
+					<input
+						name="title"
+						type="text"
+						placeholder="Title goes here..."
+						class="input input-bordered input-warning w-full max-w-xs"
+					/>
+					<button type="submit">Save</button>
+				</form>
+			</div>
+			<table class="table table-zebra table-pin-rows">
+				<tbody class="font-semibold">
+					<tr>
+						<td class="justify-end">Size:</td>
+						<td>{ file.Size.Human() }</td>
+					</tr>
+					<tr>
+						<td>ID:</td>
+						<td>{ file.Id.String() }</td>
+					</tr>
+					<tr>
+						<td>Hash:</td>
+						<td>{ file.Hash }</td>
+					</tr>
+					<tr>
+						<td>Sources:</td>
+						<td>
+							@fileSourcePaths(file)
+						</td>
+					</tr>
+					if len(file.Labels) > 0 {
+						<tr>
+							<td>Labels:</td>
+							<td>
+								@labelsList(file.Labels)
+							</td>
+						</tr>
+					}
+					if len(file.DateLabels) > 0 {
+						<tr>
+							<td>Datte Labels:</td>
+							<td>
+								@dateLabelsList(file.DateLabels)
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="card-actions justify-end">
+				<button
+					hx-on:click="htmx.toggleClass('#file-title', 'hidden')"
+					class="btn btn-primary btn-outline"
+				>
+					Edit Title
+				</button>
+				<button
+					hx-get={ fmt.Sprintf("/open/document/%s", file.Id) }
+					hx-target="#document"
+					class="btn btn-primary btn-outline"
+				>
+					View Document
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ fileSourcePaths(file *model.FileDescriptor) {
+	<div>
+		for _, path := range file.SourcePaths {
+			<p>{ path } </p>
+		}
+	</div>
+}
+
+templ filesList(files model.FileDescriptors) {
+	<div class="overflow-x-auto">
+		<table class="table table-zebra table-pin-rows">
+			<caption class="font-bold text-2xl">All Files ({ fmt.Sprintf("%d", len(files)) })</caption>
+			<thead class="font-semibold">
+				<tr>
+					<th>Source Directory</th>
+					<th>File Size</th>
+					<th></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody class="font-semibold">
+				for _, file := range files {
+					<tr>
+						<td>
+							@fileSourcePaths(file)
+						</td>
+						<td>{ file.Size.Human() }</td>
+						<td>
+							<button
+								hx-get={ fmt.Sprintf("/open/document/%s", file.Id) }
+								hx-target="#document"
+								class="btn btn-primary btn-outline"
+							>
+								View
+							</button>
+						</td>
+						<td>
+							<button
+								hx-get={ fmt.Sprintf("/files/details/%s", file.Id) }
+								hx-target="#details"
+								class="btn btn-primary btn-outline"
+							>
+								Edit
+							</button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ filesDuplicates(fileMap map[string][]*model.FileDescriptor) {
+	<div class="overflow-x-auto">
+		<table class="table table-zebra table-pin-rows">
+			<caption class="font-bold text-2xl">Duplicate Files ({ fmt.Sprintf("%d", len(fileMap)) })</caption>
+			<thead class="font-semibold">
+				<tr>
+					<th>Source Directory</th>
+					<th>Count</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody class="font-semibold">
+				for _, files := range fileMap {
+					<tr>
+						<td>
+							for _, file := range files {
+								for _, path := range file.SourcePaths {
+									<p>{ path }</p>
+								}
+							}
+						</td>
+						<td>
+							{ fmt.Sprintf("%d", len(files)) }
+						</td>
+						<td>
+							<button hx-get="/files/duplicates" hx-target="#results" class="btn btn-primary btn-outline">Merge</button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

@@ -6,8 +6,8 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/go-statementer/main.go",
-            "args": ["${workspaceFolder}/config.json"]
+            "program": "${workspaceFolder}/cmd/go-statementer.go",
+            "args": []
         }
     ]
 }

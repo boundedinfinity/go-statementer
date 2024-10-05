@@ -8,18 +8,18 @@ import (
 )
 
 func (this *Runtime) walkSource(fn func(path string, info fs.FileInfo, err error) error) error {
-	return filepath.Walk(this.config.SourceDir, func(path string, info fs.FileInfo, err error) error {
+	return filepath.Walk(this.Config.SourceDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
 
-		if stringer.StartsWith(path, this.config.ProcessedDir) {
+		if stringer.StartsWith(path, this.Config.ProcessedDir) {
 			return nil
 		}
 
 		var validExt bool
 
-		for _, ext := range this.config.AllowedExts {
+		for _, ext := range this.Config.AllowedExts {
 			if stringer.EndsWith(path, ext) {
 				validExt = true
 				break

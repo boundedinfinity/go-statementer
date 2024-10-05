@@ -11,9 +11,14 @@ import (
 
 func main() {
 	logger := logrus.New()
-	rt := runtime.New(logger, os.Args[1])
+	rt := runtime.New(logger)
+	var configPath string
 
-	if err := rt.LoadConfig(); err != nil {
+	if len(os.Args) > 1 {
+		configPath = os.Args[1]
+	}
+
+	if err := rt.LoadConfig(configPath); err != nil {
 		handleError(err)
 		return
 	}

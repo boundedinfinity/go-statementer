@@ -66,7 +66,7 @@ func (this *Runtime) HashSource(file *model.FileDescriptor) error {
 
 func (this *Runtime) WalkSource() error {
 	err := this.walkSource(func(path string, info fs.FileInfo, err error) error {
-		found := this.state.Files.BySourcePath(path)
+		found := this.State.Files.BySourcePath(path)
 		var file *model.FileDescriptor
 
 		switch len(found) {
@@ -74,7 +74,7 @@ func (this *Runtime) WalkSource() error {
 			file = model.NewFileDescriptor()
 			file.SourcePaths = []string{path}
 			file.Id = uuid.New()
-			this.state.Files = append(this.state.Files, file)
+			this.State.Files = append(this.State.Files, file)
 		case 1:
 			file = found[0]
 		default:
@@ -103,9 +103,13 @@ func (this *Runtime) WalkSource() error {
 }
 
 func (this *Runtime) FilesDuplicates() map[string][]*model.FileDescriptor {
-	return this.state.Files.Duplicates()
+	return this.State.Files.Duplicates()
 }
 
 func (this *Runtime) FilesAll() model.FileDescriptors {
-	return this.state.Files
+	return this.State.Files
+}
+
+func (this *Runtime) FileGet(id string) []*model.FileDescriptor {
+	return this.State.Files.ById(id)
 }

@@ -84,6 +84,10 @@ func (this *FileDescriptor) Merge(that *FileDescriptor) error {
 	return nil
 }
 
+func fileIdFilter(file *FileDescriptor, id string) bool {
+	return file.Id.String() == id
+}
+
 func fileTitleFilter(file *FileDescriptor, text string) bool {
 	return stringer.Contains(file.Title, text)
 }
@@ -120,6 +124,10 @@ func (this FileDescriptors) Duplicates() map[string][]*FileDescriptor {
 	}
 
 	return found
+}
+
+func (this FileDescriptors) ById(id string) []*FileDescriptor {
+	return this.filter(id, fileIdFilter)
 }
 
 func (this FileDescriptors) ByTerm(text string) []*FileDescriptor {

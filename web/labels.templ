@@ -1,0 +1,35 @@
+package web
+
+import (
+	"fmt"
+	"github.com/boundedinfinity/statementer/model"
+)
+
+templ labelsList(labels model.Labels) {
+	<div class="flex gap-2">
+		for _, label := range labels {
+			<button class="btn btn-primary">
+				{ label.Name }
+				<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
+			</button>
+		}
+	</div>
+}
+
+templ dateLabelsList(labels []model.DateLabel) {
+	<div class="flex gap-2">
+		for _, label := range labels {
+			<button class="btn btn-primary">
+				{ label.Name } : { label.Date.String() }
+				<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
+			</button>
+		}
+	</div>
+}
+
+
+templ labelsForm(labels []model.DateLabel) {
+	<form class="flex gap-2">
+		
+	</form>
+}

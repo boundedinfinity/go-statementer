@@ -1,0 +1,21 @@
+package web
+
+templ message(text string, err error) {
+	<div>
+		<span>{ text }</span>
+		if err != nil {
+			<span class="bg-red-300">{ err.Error() }</span>
+		}
+	</div>
+}
+
+templ openDocument(path string) {
+	<object
+		data={ path }
+		type="application/pdf"
+		width="100%"
+		height="100%"
+		class="overflow-y-scroll">
+		/**/
+	</object>
+}
