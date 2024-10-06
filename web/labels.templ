@@ -5,31 +5,27 @@ import (
 	"github.com/boundedinfinity/statementer/model"
 )
 
-templ labelsList(labels model.Labels) {
+templ fileLabelList(file *model.FileDescriptor) {
+	<div class="flex gap-2">
+		@simpleLabelsList(file.Labels)
+	</div>
+}
+
+templ simpleLabelsList(labels []*model.SimpleLabel) {
 	<div class="flex gap-2">
 		for _, label := range labels {
-			<button class="btn btn-primary">
-				{ label.Name }
-				<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
-			</button>
+			@simpleLabelView(label)
 		}
 	</div>
 }
 
-templ dateLabelsList(labels []model.DateLabel) {
-	<div class="flex gap-2">
-		for _, label := range labels {
-			<button class="btn btn-primary">
-				{ label.Name } : { label.Date.String() }
-				<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
-			</button>
-		}
-	</div>
+templ simpleLabelView(label *model.SimpleLabel) {
+	<button class="btn btn-primary btn-xs">
+		{ label.Name }
+		<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
+	</button>
 }
 
-
-templ labelsForm(labels []model.DateLabel) {
-	<form class="flex gap-2">
-		
-	</form>
+templ labelsForm(labels []*model.SimpleLabel) {
+	<form class="flex gap-2"></form>
 }

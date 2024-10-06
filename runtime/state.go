@@ -8,7 +8,7 @@ import (
 )
 
 func (this *Runtime) LoadState() error {
-	_, err := pather.Dirs.EnsureErr(this.Config.ProcessedDir)
+	_, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (this *Runtime) LoadState() error {
 }
 
 func (this *Runtime) SaveState() error {
-	if _, err := pather.Dirs.EnsureErr(this.Config.ProcessedDir); err != nil {
+	if _, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir); err != nil {
 		return err
 	}
 

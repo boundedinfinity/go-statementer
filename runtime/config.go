@@ -38,8 +38,8 @@ func (this *Runtime) LoadConfig(path string) error {
 	}
 
 	this.Config.SourceDir = ev.Substitue(this.Config.SourceDir)
-	this.Config.ProcessedDir = ev.Substitue(this.Config.ProcessedDir)
-	this.statePath = pather.Paths.Join(this.Config.ProcessedDir, "state.json")
+	this.Config.RepositoryDir = ev.Substitue(this.Config.RepositoryDir)
+	this.statePath = pather.Paths.Join(this.Config.RepositoryDir, "state.json")
 
 	return nil
 }

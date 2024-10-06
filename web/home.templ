@@ -1,6 +1,8 @@
 package web
 
-templ home() {
+import "github.com/boundedinfinity/statementer/model"
+
+templ home(config model.Config) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="dark">
 		<head>
@@ -12,6 +14,7 @@ templ home() {
 				content="Bounded Infinity Statement Management System"
 			/>
 			<meta name="google" content="notranslate"/>
+			<meta name="htmx-config" content='{"globalViewTransitions":"true"}'/>
 			<link rel="shortcut icon" href="/img/gopher-svgrepo-com.svg" type="image/svg+xml"/>
 			<link href="/css/daisyui.min.css" rel="stylesheet"/>
 			<link href="/css/styles.css" rel="stylesheet" type="text/css"/>
@@ -19,38 +22,80 @@ templ home() {
 			<script src="/js/htmx.min.js"></script>
 			<title>Bounded Infinity : Statement Management System</title>
 		</head>
-		<body hx-boost="true" hx-get="/files/list" hx-trigger="load,file-updated" hx-target="#results" class="p-4" >
-			<div height="95vh">
-				<div class="p-2 border-2 border-r-2 border-slate-600">
-					<button hx-get="/open/processed-dir" hx-target="#stdout" class="btn btn-primary btn-outline">Open Processed Dir</button>
-					<button hx-get="/open/source-dir" hx-target="#stdout" class="btn btn-primary btn-outline">Open Source Dir</button>
-					<button hx-get="/files/list" hx-target="#results" class="btn btn-primary btn-outline">All Files</button>
-					<button hx-get="/files/duplicates" hx-target="#results" class="btn btn-primary btn-outline">Duplicate Files</button>
+		<body hx-boost="true" hx-get="/files/list" hx-trigger="load,file-updated" hx-target="#results">
+			<div class="min-h-screen flex flex-col h-screen gap-2 min-w-full">
+				<header hx-get="/labels/all" hx-trigger="load" hx-target="#labels" class="p-2">
+					<div id="labels" class="h-min p-2 border-2 border-r-2 border-slate-600 mt-2 overflow-y-auto">
+						Labels...
+					</div>
+				</header>
+				<div class="flex-1 flex flex-row overflow-y-hidden gap-2">
+					<nav class="w-2/12 overflow-y-auto flex flex-col flex-wrap content-start gap-2 p-2">
+						<div>
+							Config Files:
+						</div>
+						<div class="ml-4">
+							<button
+								hx-get="/open/config-file"
+								hx-target="#stdout"
+								class="btn btn-primary btn-outline"
+							>
+								Open
+							</button>
+						</div>
+						<div>
+							Repository Dir:
+						</div>
+						<div class="ml-4">
+							<button
+								hx-get="/open/repository-dir"
+								hx-target="#stdout"
+								class="btn btn-primary btn-outline"
+							>
+								{ config.RepositoryDir }
+							</button>
+						</div>
+						<div>
+							Source Dir:
+						</div>
+						<div class="ml-4">
+							<button
+								hx-get="/open/source-dir"
+								hx-target="#stdout"
+								class="btn btn-primary btn-outline"
+							>
+								{ config.SourceDir }
+							</button>
+						</div>
+						<hr />
+						<button
+							hx-get="/files/list"
+							hx-target="#results"
+							class="btn btn-primary btn-outline"
+						>
+							All Files
+						</button>
+						<button
+							hx-get="/files/duplicates"
+							hx-target="#results"
+							class="btn btn-primary btn-outline"
+						>
+							Duplicate Files
+						</button>
+					</nav>
+					<main class="overflow-y-auto border w-5/12">
+						<div id="results" />
+					</main>
+					<aside class="w-4/12 h-[1600px]">
+						<div id="details" class="h-full p-2 border-2 border-r-2 border-slate-600" />
+					</aside>
+				</div>
+				<!-- end main container -->
+				<footer class="bg-gray-100">
 					<div id="stdout" class="mt-2 p-2 border-2 border-r-2 border-slate-600">
 						This is a test...
 					</div>
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<div hx-get="/labels/all" hx-trigger="load" hx-target="#labels">
-						<div id="labels" class="h-min p-2 border-2 border-r-2 border-slate-600 mt-2 overflow-y-auto">
-							Labels...
-						</div>
-						<div id="results" class="p-2 border-2 border-r-2 border-slate-600 mt-2 overflow-y-auto">
-							Loading...
-						</div>
-					</div>
-					<div>
-						<div id="details" class="h-min p-2 border-2 border-r-2 border-slate-600 mt-2">
-							<p>Details...</p>
-							<p>Details...</p>
-							<p>Details...</p>
-							<p>Details...</p>
-						</div>
-						<div id="document" class="p-2 border-2 border-r-2 border-slate-600 mt-2 h-[1600px]">
-							Document....
-						</div>
-					</div>
-				</div>
+				</footer>
 			</div>
 		</body>
 	</html>

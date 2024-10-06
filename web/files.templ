@@ -4,35 +4,40 @@ import "github.com/boundedinfinity/statementer/model"
 
 templ filesDetails(file *model.FileDescriptor) {
 	<div
-		class="card bg-base-100 w-full shadow-xl"
+		class="card bg-base-100 w-full shadow-xl h-[1600px]"
 		hx-trigger={ attrId("file-updated", file.Id.String()) }
 		hx-get={ attrPath("/files/details", file.Id.String()) }
 		hx-target="#details"
 	>
-		<div class="card-body">
-			<h2 class="card-title">
-				if file.Title == "" {
-					[UNTITLED]
-				} else {
-					{ file.Title }
-				}
-			</h2>
-			<div id="file-title" class="hidden border border-r-2 border-slate-400 m-2 p-2">
-				<form hx-patch={ attrPath("/files/details", file.Id.String()) } class="flex justify-between">
-					<input
-						name="title"
-						type="text"
-						placeholder="Title goes here..."
-						class="input input-bordered input-warning w-3/4"
-						value={ file.Title }
-					/>
-					<button type="submit">Save</button>
-				</form>
-			</div>
+		<div>
 			<table class="table table-zebra table-pin-rows">
 				<tbody class="font-semibold">
 					<tr>
-						<td class="justify-end">Size:</td>
+						<td>Name:</td>
+						<td>
+							@fileViewTitle(file)
+						</td>
+					</tr>
+					<tr>
+						<td>Repository Path:</td>
+						<td>
+							{ file.RepoPath }
+						</td>
+					</tr>
+					<tr>
+						<td>Sources:</td>
+						<td>
+							@fileSourcePaths(file)
+						</td>
+					</tr>
+					<tr>
+						<td>Labels:</td>
+						<td>
+							@fileLabelList(file)
+						</td>
+					</tr>
+					<tr>
+						<td>Size:</td>
 						<td>{ file.Size.Human() }</td>
 					</tr>
 					<tr>
@@ -43,53 +48,65 @@ templ filesDetails(file *model.FileDescriptor) {
 						<td>Hash:</td>
 						<td>{ file.Hash }</td>
 					</tr>
-					<tr>
-						<td>Sources:</td>
-						<td>
-							@fileSourcePaths(file)
-						</td>
-					</tr>
-					if len(file.Labels) > 0 {
-						<tr>
-							<td>Labels:</td>
-							<td>
-								@labelsList(file.Labels)
-							</td>
-						</tr>
-					}
-					if len(file.DateLabels) > 0 {
-						<tr>
-							<td>Datte Labels:</td>
-							<td>
-								@dateLabelsList(file.DateLabels)
-							</td>
-						</tr>
-					}
 				</tbody>
 			</table>
-			<div class="card-actions justify-end">
-				<button
-					hx-on:click="htmx.toggleClass('#file-title', 'hidden')"
-					class="btn btn-primary btn-outline"
-				>
-					Edit Title
-				</button>
-				<button
-					hx-get={ attrPath("/open/document", file.Id.String()) }
-					hx-target="#document"
-					class="btn btn-primary btn-outline"
-				>
-					View Document
-				</button>
-			</div>
 		</div>
+		<div
+			class="overflow-scroll h-[1600px] mt-6"
+			hx-get={ attrPath("/open/document", file.Id.String()) }
+			hx-target="#document"
+			hx-trigger="load"
+		>
+			<div id="document" class="h-[1600px]"></div>
+		</div>
+	</div>
+}
+
+templ fileViewTitle(file *model.FileDescriptor) {
+	<div id="file-title" class="flex justify-between align-middle w-full">
+		<div>
+			if file.Title == "" {
+				[UNTITLED]
+			} else {
+				{ file.Title }
+			}
+		</div>
+		<div>
+			<button
+				hx-patch={ attrPath("/files/title", file.Id.String()) }
+				hx-target="#file-title"
+				class="btn btn-outline btn-xs"
+			>
+				Edit
+			</button>
+		</div>
+	</div>
+}
+
+templ fileEditTitle(file *model.FileDescriptor) {
+	<div id="file-title" class="w-full">
+		<form
+			hx-post={ attrPath("/files/title", file.Id.String()) }
+			hx-target="#file-title"
+			class="flex justify-between align-middle w-full"
+		>
+			<input name="id" type="hidden" value={ file.Id.String() }/>
+			<input
+				name="title"
+				type="text"
+				placeholder="Title goes here..."
+				class="input input-bordered flex-1"
+				value={ file.Title }
+			/>
+			<button type="submit" class="btn btn-outline btn-xs">Save</button>
+		</form>
 	</div>
 }
 
 templ fileSourcePaths(file *model.FileDescriptor) {
 	<div>
 		for _, path := range file.SourcePaths {
-			<p>{ path } </p>
+			<p class="text-ellipsis hover:text-clip">{ path } </p>
 		}
 	</div>
 }
@@ -100,9 +117,7 @@ templ filesList(files model.FileDescriptors) {
 			<caption class="font-bold text-2xl">All Files ({ print("%d", len(files)) })</caption>
 			<thead class="font-semibold">
 				<tr>
-					<th>Source Directory</th>
-					<th>File Size</th>
-					<th></th>
+					<th>Document</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -110,11 +125,11 @@ templ filesList(files model.FileDescriptors) {
 				for _, file := range files {
 					<tr>
 						<td>
-							@fileSourcePaths(file)
-						</td>
-						<td>{ file.Size.Human() }</td>
-						<td>
-							@openDocumentButton(file.Id.String())
+							if file.Title != "" {
+								{ file.Title }
+							} else {
+								@fileSourcePaths(file)
+							}
 						</td>
 						<td>
 							<button
@@ -122,7 +137,7 @@ templ filesList(files model.FileDescriptors) {
 								hx-target="#details"
 								class="btn btn-primary btn-outline"
 							>
-								Edit
+								View
 							</button>
 						</td>
 					</tr>
@@ -153,15 +168,20 @@ templ filesDuplicates(fileMap map[string][]*model.FileDescriptor) {
 										<p>{ path }</p>
 									</div>
 								}
-
-								@openDocumentButton(file.Id.String())
+								@documentViwerButton(file.Id.String())
 							}
 						</td>
 						<td>
 							{ print("%d", len(files)) }
 						</td>
 						<td>
-							<button hx-get="/files/duplicates" hx-target="#results" class="btn btn-primary btn-outline">Merge</button>
+							<button
+								hx-get="/files/duplicates"
+								hx-target="#results"
+								class="btn btn-primary btn-outline"
+							>
+								Merge
+							</button>
 						</td>
 					</tr>
 				}

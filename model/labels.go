@@ -6,15 +6,14 @@ import (
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/mapper"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
-	"github.com/boundedinfinity/rfc3339date"
 	"github.com/google/uuid"
 )
 
 // =====================================================================================
-// Label
+// Simple Label
 // =====================================================================================
 
-func NewFromLabel(label SimpleLabel) *SimpleLabel {
+func SimpleLabelCopy(label *SimpleLabel) *SimpleLabel {
 	return &SimpleLabel{
 		Name:        label.Name,
 		Description: label.Description,
@@ -74,91 +73,6 @@ func (this ErrLabelValidationDetails) Unwrap() error {
 }
 
 // =====================================================================================
-// DateLabel
-// =====================================================================================
-
-type DateLabel struct {
-	*SimpleLabel
-	Date rfc3339date.Rfc3339Date `json:"date" yaml:"date"`
-}
-
-func DateLabels2Labels(datedLabels []DateLabel) []*SimpleLabel {
-	var labels []*SimpleLabel
-
-	for _, datedLabel := range datedLabels {
-		labels = append(labels, datedLabel.SimpleLabel)
-	}
-
-	return labels
-}
-
-// =====================================================================================
-// ValueLabel
-// =====================================================================================
-
-type ValueLabel struct {
-	*SimpleLabel
-	Value string `json:"value" yaml:"value"`
-}
-
-func ValueLabel2Labels(datedLabels []ValueLabel) []*SimpleLabel {
-	var labels []*SimpleLabel
-
-	for _, datedLabel := range datedLabels {
-		labels = append(labels, datedLabel.SimpleLabel)
-	}
-
-	return labels
-}
-
-// =====================================================================================
-// Labels
-// =====================================================================================
-
-type Labels []*SimpleLabel
-
-func (this Labels) filter(text string, fns ...func(*SimpleLabel, string) bool) []*SimpleLabel {
-	var found []*SimpleLabel
-
-	for _, label := range this {
-		for _, fn := range fns {
-			if fn(label, text) {
-				found = append(found, label)
-			}
-		}
-	}
-
-	return found
-}
-
-func (this Labels) contains(text string, fns ...func(*SimpleLabel, string) bool) bool {
-	var found bool
-
-	for _, label := range this {
-		for _, fn := range fns {
-			if fn(label, text) {
-				found = true
-				break
-			}
-		}
-	}
-
-	return found
-}
-
-func (this Labels) ByName(text string) []*SimpleLabel {
-	return this.filter(text, labelNameFilter)
-}
-
-func (this Labels) ByDescription(text string) []*SimpleLabel {
-	return this.filter(text, labelDescriptionFilter)
-}
-
-func (this Labels) ByTerm(text string) []*SimpleLabel {
-	return this.filter(text, labelNameFilter, labelDescriptionFilter)
-}
-
-// =====================================================================================
 // LabelManager
 // =====================================================================================
 
@@ -174,7 +88,7 @@ type LabelManager struct {
 	byName map[string]*SimpleLabel
 }
 
-func (this *LabelManager) All() Labels {
+func (this *LabelManager) All() []*SimpleLabel {
 	return mapper.Values(this.byId)
 }
 

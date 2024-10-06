@@ -29,12 +29,16 @@ type Runtime struct {
 	debug      bool
 }
 
-func (this *Runtime) OpenProcessedDir() (string, error) {
-	return this.osOpen(this.Config.ProcessedDir)
+func (this *Runtime) OpenRepositoryDir() (string, error) {
+	return this.osOpen(this.Config.RepositoryDir)
 }
 
 func (this *Runtime) OpenSourceDir() (string, error) {
 	return this.osOpen(this.Config.SourceDir)
+}
+
+func (this *Runtime) OpenConfigFile() (string, error) {
+	return this.osOpen(this.configPath)
 }
 
 func (this *Runtime) Debug() bool {

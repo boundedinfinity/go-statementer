@@ -13,7 +13,7 @@ func (this *Runtime) walkSource(fn func(path string, info fs.FileInfo, err error
 			return nil
 		}
 
-		if stringer.StartsWith(path, this.Config.ProcessedDir) {
+		if stringer.StartsWith(path, this.Config.RepositoryDir) {
 			return nil
 		}
 

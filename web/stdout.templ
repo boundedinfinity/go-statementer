@@ -9,19 +9,17 @@ templ message(text string, err error) {
 	</div>
 }
 
-templ openDocument(path string) {
+templ documentViewer(path string) {
 	<object
 		data={ path }
 		type="application/pdf"
 		width="100%"
 		height="100%"
-		class="overflow-y-scroll"
-	>
-		/**/
-	</object>
+		class="min-h-full"
+	></object>
 }
 
-templ openDocumentButton(id string) {
+templ documentViwerButton(id string) {
 	<button
 		hx-get={ attrPath("/open/document", id) }
 		hx-target="#document"

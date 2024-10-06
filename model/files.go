@@ -11,51 +11,19 @@ import (
 
 func NewFileDescriptor() *FileDescriptor {
 	return &FileDescriptor{
-		Labels:     Labels{},
-		DateLabels: []DateLabel{},
+		Labels: []*SimpleLabel{},
 	}
-}
-
-var (
-	ErrFileDescriptorErr = errors.New("file descriptor error")
-)
-
-type ErrFileDescriptorDetails struct {
-	msg   string
-	files []*FileDescriptor
-}
-
-func (e ErrFileDescriptorDetails) Error() string {
-	lines := []string{ErrFileDescriptorErr.Error(), e.msg}
-
-	var names []string
-
-	if len(e.files) > 0 {
-		for _, file := range e.files {
-			names = append(names, file.SourcePaths...)
-		}
-
-		lines = append(lines, fmt.Sprintf("files - %s", stringer.Join(", ", names...)))
-	}
-
-	return stringer.Join(" : ", lines...)
-}
-
-func (this ErrFileDescriptorDetails) Unwrap() error {
-	return ErrFileDescriptorErr
 }
 
 type FileDescriptor struct {
-	Id          uuid.UUID    `json:"id" yaml:"id"`
-	Title       string       `json:"title" yaml:"title"`
-	SourcePaths []string     `json:"source-path" yaml:"source-path"`
-	RepoPath    string       `json:"repo-path" yaml:"repo-path"`
-	Size        Size         `json:"size" yaml:"size"`
-	Extention   string       `json:"extention" yaml:"extention"`
-	Labels      Labels       `json:"labels" yaml:"labels"`
-	DateLabels  []DateLabel  `json:"date-labels" yaml:"date-labels"`
-	ValueLabels []ValueLabel `json:"value-labels" yaml:"value-labels"`
-	Hash        string       `json:"hash" yaml:"hash"`
+	Id          uuid.UUID      `json:"id" yaml:"id"`
+	Title       string         `json:"title" yaml:"title"`
+	SourcePaths []string       `json:"source-path" yaml:"source-path"`
+	RepoPath    string         `json:"repo-path" yaml:"repo-path"`
+	Size        Size           `json:"size" yaml:"size"`
+	Extention   string         `json:"extention" yaml:"extention"`
+	Labels      []*SimpleLabel `json:"labels" yaml:"labels"`
+	Hash        string         `json:"hash" yaml:"hash"`
 }
 
 func (this *FileDescriptor) Merge(that *FileDescriptor) error {
@@ -103,11 +71,48 @@ func fileExtentionFilter(file *FileDescriptor, text string) bool {
 	return stringer.Contains(file.Extention, text)
 }
 
-func fileLabelFilter(file *FileDescriptor, text string) bool {
-	return file.Labels.contains(text, labelNameFilter, labelDescriptionFilter)
+func fileLabelTermFilter(file *FileDescriptor, text string) bool {
+	return slicer.ContainsFn(func(_ int, label *SimpleLabel) bool {
+		return stringer.Contains(label.Name, text) || stringer.Contains(label.Description, text)
+	}, file.Labels...)
 }
 
+// =====================================================================================
+// Errors
+// =====================================================================================
+
+var (
+	ErrFileDescriptorErr = errors.New("file descriptor error")
+)
+
+type ErrFileDescriptorDetails struct {
+	msg   string
+	files []*FileDescriptor
+}
+
+func (e ErrFileDescriptorDetails) Error() string {
+	lines := []string{ErrFileDescriptorErr.Error(), e.msg}
+
+	var names []string
+
+	if len(e.files) > 0 {
+		for _, file := range e.files {
+			names = append(names, file.SourcePaths...)
+		}
+
+		lines = append(lines, fmt.Sprintf("files - %s", stringer.Join(", ", names...)))
+	}
+
+	return stringer.Join(" : ", lines...)
+}
+
+func (this ErrFileDescriptorDetails) Unwrap() error {
+	return ErrFileDescriptorErr
+}
+
+// =====================================================================================
 // FileDescriptors
+// =====================================================================================
 
 type FileDescriptors []*FileDescriptor
 
@@ -148,7 +153,7 @@ func (this FileDescriptors) ByExtention(name string) []*FileDescriptor {
 }
 
 func (this FileDescriptors) ByLabel(name string) []*FileDescriptor {
-	return this.filter(name, fileLabelFilter)
+	return this.filter(name, fileLabelTermFilter)
 }
 
 func (this FileDescriptors) filter(text string, fns ...func(*FileDescriptor, string) bool) []*FileDescriptor {
