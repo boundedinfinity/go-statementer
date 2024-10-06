@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"sync"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/model"
@@ -20,13 +21,12 @@ func New(logger *logrus.Logger) *Runtime {
 }
 
 type Runtime struct {
-	configPath string
-	Config     model.Config
-	statePath  string
-	State      model.State
-	Labels     *model.LabelManager
-	logger     *logrus.Logger
-	debug      bool
+	Config model.Config
+	State  model.State
+	Labels *model.LabelManager
+	logger *logrus.Logger
+	debug  bool
+	mutex  sync.Mutex
 }
 
 func (this *Runtime) OpenRepositoryDir() (string, error) {
@@ -38,7 +38,7 @@ func (this *Runtime) OpenSourceDir() (string, error) {
 }
 
 func (this *Runtime) OpenConfigFile() (string, error) {
-	return this.osOpen(this.configPath)
+	return this.osOpen(this.Config.ConfigPath)
 }
 
 func (this *Runtime) Debug() bool {

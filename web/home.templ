@@ -23,7 +23,7 @@ templ home(config model.Config) {
 			<title>Bounded Infinity : Statement Management System</title>
 		</head>
 		<body hx-boost="true">
-			<div class="min-h-screen flex flex-col h-screen gap-2 min-w-full">
+			<div class="min-h-screen flex flex-col h-screen gap-2 min-w-full p-2">
 				<header
 					hx-get="/labels/all"
 					hx-trigger="load,label-updated"
@@ -40,7 +40,7 @@ templ home(config model.Config) {
 				<div class="flex-1 flex flex-row overflow-y-hidden gap-2">
 					<nav class="w-2/12 overflow-y-auto flex flex-col flex-wrap content-start gap-2 p-2">
 						<div>
-							Config Files:
+							Config File:
 						</div>
 						<div class="ml-4">
 							<button
@@ -48,7 +48,7 @@ templ home(config model.Config) {
 								hx-target="#stdout"
 								class="btn btn-primary btn-outline"
 							>
-								Open
+								{ config.ConfigPath }
 							</button>
 						</div>
 						<div>
@@ -90,16 +90,24 @@ templ home(config model.Config) {
 						>
 							Duplicate Files
 						</button>
+
+						<button
+							hx-post="/labels/year/this"
+							hx-swap="none"
+							class="btn btn-primary btn-outline"
+						>
+							Generate Labels for this year
+						</button>
 					</nav>
 					<main
-						class="overflow-y-auto border w-5/12"
+						class="overflow-y-auto border w-4/12"
 						hx-get="/files/list"
 						hx-trigger="load,file-updated"
 						hx-target="#results"
 					>
 						<div id="results"></div>
 					</main>
-					<aside class="w-4/12 h-[1600px]">
+					<aside class="w-6/12 h-[1600px]">
 						<div id="details" class="h-full p-2 border-2 border-r-2 border-slate-600"></div>
 					</aside>
 				</div>

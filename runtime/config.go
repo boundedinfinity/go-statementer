@@ -28,7 +28,7 @@ func (this *Runtime) LoadConfig(path string) error {
 		return err
 	}
 
-	data, err := os.ReadFile(this.configPath)
+	data, err := os.ReadFile(this.Config.ConfigPath)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (this *Runtime) LoadConfig(path string) error {
 
 	this.Config.SourceDir = ev.Substitue(this.Config.SourceDir)
 	this.Config.RepositoryDir = ev.Substitue(this.Config.RepositoryDir)
-	this.statePath = pather.Paths.Join(this.Config.RepositoryDir, "state.json")
+	this.Config.StatePath = pather.Paths.Join(this.Config.RepositoryDir, "state.json")
 
 	return nil
 }
@@ -49,7 +49,7 @@ func (this *Runtime) findConfig(ev *environmenter.Environmenter, path string) er
 		if path != "" {
 			path = ev.Substitue(path)
 			if pather.Files.Exists(path) {
-				this.configPath = path
+				this.Config.ConfigPath = path
 				return true
 			}
 		}

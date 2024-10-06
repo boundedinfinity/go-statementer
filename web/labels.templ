@@ -6,20 +6,19 @@ import (
 )
 
 templ fileLabelList(file *model.FileDescriptor) {
-	<div class="flex gap-2">
-		@simpleLabelsList(file.Labels)
-	</div>
+	@simpleLabelsList(file.Labels)
 }
 
-templ simpleLabelsList(labels []*model.SimpleLabel) {
-	<div class="flex gap-2">
+templ simpleLabelsList(labels []model.SimpleLabel) {
+	<div class="flex flex-wrap gap-2">
+		{ print("%d", len(labels)) } Labels
 		for _, label := range labels {
 			@simpleLabelView(label)
 		}
 	</div>
 }
 
-templ simpleLabelView(label *model.SimpleLabel) {
+templ simpleLabelView(label model.SimpleLabel) {
 	<button class="btn btn-primary btn-xs">
 		{ label.Name }
 		<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
@@ -58,6 +57,35 @@ templ labelNewForm() {
 		/>
 		<button type="submit" class="btn btn-outline btn-xs">Save</button>
 	</form>
+}
+
+templ labelDetailsView(label model.SimpleLabel) {
+	<div id="file-title" class="w-full">
+		<form
+			hx-post="/labels/new"
+			hx-target="this"
+			hx-swap="outerHTML"
+			class="grid grid-cols-1 justify-between align-middle w-full"
+		>
+			<input name="id" type="hidden" value={ label.Id.String() }/>
+			<input
+				name="name"
+				type="text"
+				placeholder="Name goes here..."
+				class="input input-bordered flex-1"
+				value={ label.Name }
+			/>
+			<input
+				name="description"
+				type="text"
+				placeholder="Description goes here..."
+				class="input input-bordered flex-1"
+				value={ label.Description }
+			/>
+			<button type="submit" class="btn btn-outline btn-xs">Edit</button>
+			<button type="submit" class="btn btn-outline btn-xs">Cancel</button>
+		</form>
+	</div>
 }
 
 templ labelEditForm(label *model.SimpleLabel) {

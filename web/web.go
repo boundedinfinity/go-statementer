@@ -2,6 +2,8 @@ package web
 
 import (
 	"log"
+	"strconv"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/boundedinfinity/statementer/model"
@@ -33,7 +35,10 @@ var (
 )
 
 func (this *Web) Init() error {
-	this.fiber = fiber.New()
+	this.fiber = fiber.New(fiber.Config{
+		// https://docs.gofiber.io/#zero-allocation
+		Immutable: true,
+	})
 	this.fiber.Use(logger.New())
 
 	this.fiber.Get("/", func(c *fiber.Ctx) error {
@@ -64,6 +69,35 @@ func (this *Web) initLabelRoutes() error {
 		return Render(c, simpleLabelsList(this.runtime.Labels.All()))
 	})
 
+	this.fiber.Post("/labels/year/:year", func(c *fiber.Ctx) error {
+		year := c.Params("year")
+		var yearInt int
+		var err error
+
+		if year == "this" {
+			yearInt = time.Now().Year()
+		} else {
+			yearInt, err = strconv.Atoi(year)
+			if err != nil {
+				log.Println(err.Error())
+			}
+		}
+
+		if err = this.runtime.Labels.GenerateYear(yearInt); err != nil {
+			log.Println(err.Error())
+		}
+
+		if err == nil {
+			if err = this.runtime.SaveState(); err != nil {
+				log.Println(err.Error())
+			} else {
+				c.Response().Header.Add("HX-Trigger", "label-updated")
+			}
+		}
+
+		return nil
+	})
+
 	this.fiber.Get("/labels/button", func(c *fiber.Ctx) error {
 		return Render(c, labelFormButton())
 	})
@@ -75,9 +109,11 @@ func (this *Web) initLabelRoutes() error {
 	this.fiber.Post("/labels/new", func(c *fiber.Ctx) error {
 		name := c.FormValue("name")
 		desc := c.FormValue("description")
-		label := &model.SimpleLabel{Name: name, Description: desc}
+		label := model.SimpleLabel{Name: name, Description: desc}
 
-		this.runtime.Labels.Add(label)
+		if _, err := this.runtime.Labels.Add(false, label); err != nil {
+			log.Println(err.Error())
+		}
 
 		if err := this.runtime.SaveState(); err != nil {
 			log.Println(err.Error())

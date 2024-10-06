@@ -3,8 +3,9 @@ package model
 import (
 	"errors"
 	"fmt"
+	"sync"
+	"time"
 
-	"github.com/boundedinfinity/go-commoner/idiomatic/mapper"
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/google/uuid"
@@ -14,8 +15,9 @@ import (
 // Simple Label
 // =====================================================================================
 
-func SimpleLabelCopy(label *SimpleLabel) *SimpleLabel {
-	return &SimpleLabel{
+func SimpleLabelCopy(label SimpleLabel) SimpleLabel {
+	return SimpleLabel{
+		Id:          label.Id,
 		Name:        label.Name,
 		Description: label.Description,
 	}
@@ -46,11 +48,11 @@ func (this SimpleLabel) Validate() error {
 	return nil
 }
 
-func labelNameFilter(label *SimpleLabel, text string) bool {
+func labelNameFilter(label SimpleLabel, text string) bool {
 	return stringer.Contains(label.Name, text)
 }
 
-func labelDescriptionFilter(label *SimpleLabel, text string) bool {
+func labelDescriptionFilter(label SimpleLabel, text string) bool {
 	return stringer.Contains(label.Description, text)
 }
 
@@ -79,76 +81,141 @@ func (this ErrLabelValidationDetails) Unwrap() error {
 
 func NewLabelManager() *LabelManager {
 	return &LabelManager{
-		byId:   map[string]*SimpleLabel{},
-		byName: map[string]*SimpleLabel{},
+		labels: []*SimpleLabel{},
+		// byId:   map[string]*SimpleLabel{},
+		// byName: map[string]*SimpleLabel{},
 	}
 }
 
 type LabelManager struct {
-	byId   map[string]*SimpleLabel
-	byName map[string]*SimpleLabel
+	labels []*SimpleLabel
+	// byId   map[string]*SimpleLabel
+	// byName map[string]*SimpleLabel
+	mutex sync.Mutex
 }
 
-func (this *LabelManager) All() []*SimpleLabel {
-	return slicer.SortFn(
-		func(label *SimpleLabel) string { return label.Name },
-		mapper.Values(this.byId)...,
-	)
-}
+func (this *LabelManager) All() []SimpleLabel {
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
 
-func (this *LabelManager) New(name, description string) (*SimpleLabel, error) {
-	return this.Add(&SimpleLabel{Name: name, Description: description})
+	return slicer.Map(func(_ int, label *SimpleLabel) SimpleLabel {
+		return *label
+	}, this.labels...)
 }
 
 var ErrLabelManagerErr = errors.New("label manager error")
 
-func (this *LabelManager) ById(id uuid.UUID) *SimpleLabel {
-	return this.byId[id.String()]
+func (this *LabelManager) GenerateYear(year int) error {
+	var labels []SimpleLabel
+
+	for month := time.January; month <= time.December; month++ {
+		labels = append(labels, SimpleLabel{
+			Name: fmt.Sprintf("%04d.%02d", year, month),
+		})
+	}
+
+	if _, err := this.Add(false, labels...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (this *LabelManager) ByName(id uuid.UUID) *SimpleLabel {
-	return this.byId[id.String()]
+func (this *LabelManager) ById(id uuid.UUID) (SimpleLabel, bool) {
+	for _, label := range this.labels {
+		if label.Id == id {
+			return *label, true
+		}
+	}
+
+	return SimpleLabel{}, false
 }
 
-func (this *LabelManager) Add(labels ...*SimpleLabel) (*SimpleLabel, error) {
+func (this *LabelManager) byId(id uuid.UUID) (*SimpleLabel, bool) {
+	for _, label := range this.labels {
+		if label.Id == id {
+			return label, true
+		}
+	}
+
+	return nil, false
+}
+
+func (this *LabelManager) ByName(name string) (SimpleLabel, bool) {
+	name = stringer.Lowercase(name)
+
+	for _, label := range this.labels {
+		if stringer.Lowercase(label.Name) == name {
+			return *label, true
+		}
+	}
+
+	return SimpleLabel{}, false
+}
+
+func (this *LabelManager) byName(name string) (*SimpleLabel, bool) {
+	name = stringer.Lowercase(name)
+
+	for _, label := range this.labels {
+		if stringer.Lowercase(label.Name) == name {
+			return label, true
+		}
+	}
+
+	return nil, false
+}
+
+func (this *LabelManager) Add(addToCount bool, labels ...SimpleLabel) (SimpleLabel, error) {
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+
 	for _, label := range labels {
-		if current, err := this.add(label); err != nil {
+		if current, err := this.add(addToCount, label); err != nil {
 			return current, err
 		}
 	}
 
-	return nil, nil
+	return SimpleLabel{}, nil
 }
 
-func (this *LabelManager) add(label *SimpleLabel) (*SimpleLabel, error) {
+func (this *LabelManager) add(addToCount bool, label SimpleLabel) (SimpleLabel, error) {
 	if err := label.Validate(); err != nil {
-		return nil, NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
+		return SimpleLabel{}, NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
 	}
 
 	var found *SimpleLabel
 	var ok bool
 
 	if !uuidIsZero(label.Id) {
-		found, ok = this.byId[label.Id.String()]
-		// TODO check descriptions
+		if found, ok = this.byId(label.Id); ok {
+			return *found, nil
+		}
 	}
 
 	if !ok {
-		found, ok = this.byName[stringer.Lowercase(label.Name)]
-		// TODO check descriptions
+		if found, ok := this.byName(label.Name); ok {
+			return *found, nil
+		}
 	}
+	// TODO check name and descriptions dups
 
 	if !ok {
-		if uuidIsZero(label.Id) {
-			label.Id = uuid.New()
+		copy := SimpleLabelCopy(label)
+		found = &copy
+		if uuidIsZero(found.Id) {
+			found.Id = uuid.New()
 		}
 
-		this.byId[label.Id.String()] = label
-		this.byName[stringer.Lowercase(label.Name)] = label
-
-		found = label
+		this.labels = append(this.labels, found)
 	}
 
-	found.Count++
-	return found, nil
+	if addToCount {
+		found.Count++
+	}
+
+	this.labels = slicer.SortFn(func(label *SimpleLabel) string {
+		return label.Name
+	}, this.labels...)
+
+	return *found, nil
 }

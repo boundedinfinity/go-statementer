@@ -8,18 +8,21 @@ import (
 )
 
 func (this *Runtime) LoadState() error {
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+
 	_, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir)
 	if err != nil {
 		return err
 	}
 
-	ok, err := pather.Files.ExistsErr(this.statePath)
+	ok, err := pather.Files.ExistsErr(this.Config.StatePath)
 	if err != nil {
 		return err
 	}
 
 	if ok {
-		data, err := os.ReadFile(this.statePath)
+		data, err := os.ReadFile(this.Config.StatePath)
 		if err != nil {
 			return err
 		}
@@ -29,18 +32,18 @@ func (this *Runtime) LoadState() error {
 		}
 	}
 
-	if _, err := this.Labels.Add(this.State.Labels...); err != nil {
+	if _, err := this.Labels.Add(false, this.State.Labels...); err != nil {
 		return err
 	}
 
-	for _, file := range this.State.Files {
-		if _, err := this.Labels.Add(file.Labels...); err != nil {
+	for _, label := range this.Config.Labels {
+		if _, err := this.Labels.Add(false, label); err != nil {
 			return err
 		}
 	}
 
-	for _, label := range this.Config.Labels {
-		if _, err := this.Labels.Add(&label); err != nil {
+	for _, file := range this.State.Files {
+		if _, err := this.Labels.Add(true, file.Labels...); err != nil {
 			return err
 		}
 	}
@@ -49,6 +52,9 @@ func (this *Runtime) LoadState() error {
 }
 
 func (this *Runtime) SaveState() error {
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+
 	if _, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir); err != nil {
 		return err
 	}
@@ -60,7 +66,7 @@ func (this *Runtime) SaveState() error {
 		return err
 	}
 
-	if err := os.WriteFile(this.statePath, data, os.FileMode(0755)); err != nil {
+	if err := os.WriteFile(this.Config.StatePath, data, os.FileMode(0755)); err != nil {
 		return err
 	}
 
