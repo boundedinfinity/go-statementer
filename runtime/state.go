@@ -29,6 +29,10 @@ func (this *Runtime) LoadState() error {
 		}
 	}
 
+	if _, err := this.Labels.Add(this.State.Labels...); err != nil {
+		return err
+	}
+
 	for _, file := range this.State.Files {
 		if _, err := this.Labels.Add(file.Labels...); err != nil {
 			return err
@@ -48,6 +52,8 @@ func (this *Runtime) SaveState() error {
 	if _, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir); err != nil {
 		return err
 	}
+
+	this.State.Labels = this.Labels.All()
 
 	data, err := json.MarshalIndent(this.State, "", "    ")
 	if err != nil {

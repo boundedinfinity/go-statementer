@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/mapper"
+	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/google/uuid"
 )
@@ -89,7 +90,10 @@ type LabelManager struct {
 }
 
 func (this *LabelManager) All() []*SimpleLabel {
-	return mapper.Values(this.byId)
+	return slicer.SortFn(
+		func(label *SimpleLabel) string { return label.Name },
+		mapper.Values(this.byId)...,
+	)
 }
 
 func (this *LabelManager) New(name, description string) (*SimpleLabel, error) {

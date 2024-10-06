@@ -26,6 +26,64 @@ templ simpleLabelView(label *model.SimpleLabel) {
 	</button>
 }
 
-templ labelsForm(labels []*model.SimpleLabel) {
-	<form class="flex gap-2"></form>
+templ labelFormButton() {
+	<button
+		hx-get="/labels/new"
+		hx-target="this"
+		hx-swap="outerHTML"
+		class="btn btn-outline btn-xs m-4"
+	>
+		New
+	</button>
+}
+
+templ labelNewForm() {
+	<form
+		hx-post="/labels/new"
+		hx-target="this"
+		hx-swap="outerHTML"
+		class="grid grid-cols-1 gap-2 justify-between align-middle w-full m-4"
+	>
+		<input
+			name="name"
+			type="text"
+			placeholder="Name goes here..."
+			class="input input-bordered flex-1"
+		/>
+		<input
+			name="description"
+			type="text"
+			placeholder="Description goes here..."
+			class="input input-bordered flex-1"
+		/>
+		<button type="submit" class="btn btn-outline btn-xs">Save</button>
+	</form>
+}
+
+templ labelEditForm(label *model.SimpleLabel) {
+	<div id="file-title" class="w-full">
+		<form
+			hx-post="/labels/new"
+			hx-target="this"
+			hx-swap="outerHTML"
+			class="grid grid-cols-1 justify-between align-middle w-full"
+		>
+			<input name="id" type="hidden" value={ label.Id.String() }/>
+			<input
+				name="name"
+				type="text"
+				placeholder="Name goes here..."
+				class="input input-bordered flex-1"
+				value={ label.Name }
+			/>
+			<input
+				name="description"
+				type="text"
+				placeholder="Description goes here..."
+				class="input input-bordered flex-1"
+				value={ label.Description }
+			/>
+			<button type="submit" class="btn btn-outline btn-xs">Save</button>
+		</form>
+	</div>
 }

@@ -22,11 +22,19 @@ templ home(config model.Config) {
 			<script src="/js/htmx.min.js"></script>
 			<title>Bounded Infinity : Statement Management System</title>
 		</head>
-		<body hx-boost="true" hx-get="/files/list" hx-trigger="load,file-updated" hx-target="#results">
+		<body hx-boost="true">
 			<div class="min-h-screen flex flex-col h-screen gap-2 min-w-full">
-				<header hx-get="/labels/all" hx-trigger="load" hx-target="#labels" class="p-2">
-					<div id="labels" class="h-min p-2 border-2 border-r-2 border-slate-600 mt-2 overflow-y-auto">
+				<header
+					hx-get="/labels/all"
+					hx-trigger="load,label-updated"
+					hx-target="#labels"
+					class="p-2 mt-2 border-2 border-r-2 border-slate-600"
+				>
+					<div id="labels">
 						Labels...
+					</div>
+					<div>
+						@labelFormButton()
 					</div>
 				</header>
 				<div class="flex-1 flex flex-row overflow-y-hidden gap-2">
@@ -67,7 +75,7 @@ templ home(config model.Config) {
 								{ config.SourceDir }
 							</button>
 						</div>
-						<hr />
+						<hr/>
 						<button
 							hx-get="/files/list"
 							hx-target="#results"
@@ -83,11 +91,16 @@ templ home(config model.Config) {
 							Duplicate Files
 						</button>
 					</nav>
-					<main class="overflow-y-auto border w-5/12">
-						<div id="results" />
+					<main
+						class="overflow-y-auto border w-5/12"
+						hx-get="/files/list"
+						hx-trigger="load,file-updated"
+						hx-target="#results"
+					>
+						<div id="results"></div>
 					</main>
 					<aside class="w-4/12 h-[1600px]">
-						<div id="details" class="h-full p-2 border-2 border-r-2 border-slate-600" />
+						<div id="details" class="h-full p-2 border-2 border-r-2 border-slate-600"></div>
 					</aside>
 				</div>
 				<!-- end main container -->

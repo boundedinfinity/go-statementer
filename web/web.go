@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/a-h/templ"
+	"github.com/boundedinfinity/statementer/model"
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -51,52 +52,42 @@ func (this *Web) Init() error {
 		return nil
 	})
 
-	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
-		return Render(c, simpleLabelsList(this.runtime.Labels.All()))
-	})
-
 	this.initFileDetails()
-	this.initUtils()
+	this.initLabelRoutes()
+	this.initOtherRoutes()
 
 	return nil
 }
 
-func (this *Web) initUtils() error {
-	this.fiber.Get("/open/config-file", func(c *fiber.Ctx) error {
-		text, err := this.runtime.OpenConfigFile()
-		return Render(c, message(text, err))
+func (this *Web) initLabelRoutes() error {
+	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
+		return Render(c, simpleLabelsList(this.runtime.Labels.All()))
 	})
 
-	this.fiber.Get("/open/source-dir", func(c *fiber.Ctx) error {
-		text, err := this.runtime.OpenSourceDir()
-		return Render(c, message(text, err))
+	this.fiber.Get("/labels/button", func(c *fiber.Ctx) error {
+		return Render(c, labelFormButton())
 	})
 
-	this.fiber.Get("/open/repository-dir", func(c *fiber.Ctx) error {
-		text, err := this.runtime.OpenRepositoryDir()
-		return Render(c, message(text, err))
+	this.fiber.Get("/labels/new", func(c *fiber.Ctx) error {
+		return Render(c, labelNewForm())
 	})
 
-	this.fiber.Get("/open/document/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
-		files := this.runtime.FileGet(id)
-		if len(files) > 0 {
-			if len(files[0].SourcePaths) > 0 {
-				path := webSourcePath(this.runtime.Config, files[0].SourcePaths[0])
-				return Render(c, documentViewer(path))
-			}
+	this.fiber.Post("/labels/new", func(c *fiber.Ctx) error {
+		name := c.FormValue("name")
+		desc := c.FormValue("description")
+		label := &model.SimpleLabel{Name: name, Description: desc}
+
+		this.runtime.Labels.Add(label)
+
+		if err := this.runtime.SaveState(); err != nil {
+			log.Println(err.Error())
 		}
 
-		return nil
+		c.Response().Header.Add("HX-Trigger", "label-updated")
+
+		return Render(c, labelFormButton())
 	})
 
-	this.fiber.Static("/", "./assets")
-	this.fiber.Static(_PREFIX_PROCESSED_DIR, this.runtime.Config.RepositoryDir, fiber.Static{
-		Browse: true,
-	})
-	this.fiber.Static(_PREFIX_SOURCE_DIR, this.runtime.Config.SourceDir, fiber.Static{
-		Browse: true,
-	})
 	return nil
 }
 
@@ -136,6 +127,46 @@ func (this *Web) initFileDetails() error {
 
 		c.Response().Header.Add("HX-Trigger", "file-updated")
 		return Render(c, fileViewTitle(files[0]))
+	})
+
+	return nil
+}
+
+func (this *Web) initOtherRoutes() error {
+	this.fiber.Get("/open/config-file", func(c *fiber.Ctx) error {
+		text, err := this.runtime.OpenConfigFile()
+		return Render(c, message(text, err))
+	})
+
+	this.fiber.Get("/open/source-dir", func(c *fiber.Ctx) error {
+		text, err := this.runtime.OpenSourceDir()
+		return Render(c, message(text, err))
+	})
+
+	this.fiber.Get("/open/repository-dir", func(c *fiber.Ctx) error {
+		text, err := this.runtime.OpenRepositoryDir()
+		return Render(c, message(text, err))
+	})
+
+	this.fiber.Get("/open/document/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		files := this.runtime.FileGet(id)
+		if len(files) > 0 {
+			if len(files[0].SourcePaths) > 0 {
+				path := webSourcePath(this.runtime.Config, files[0].SourcePaths[0])
+				return Render(c, documentViewer(path))
+			}
+		}
+
+		return nil
+	})
+
+	this.fiber.Static("/", "./assets")
+	this.fiber.Static(_PREFIX_PROCESSED_DIR, this.runtime.Config.RepositoryDir, fiber.Static{
+		Browse: true,
+	})
+	this.fiber.Static(_PREFIX_SOURCE_DIR, this.runtime.Config.SourceDir, fiber.Static{
+		Browse: true,
 	})
 
 	return nil

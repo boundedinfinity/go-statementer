@@ -73,7 +73,7 @@ func fileExtentionFilter(file *FileDescriptor, text string) bool {
 
 func fileLabelTermFilter(file *FileDescriptor, text string) bool {
 	return slicer.ContainsFn(func(_ int, label *SimpleLabel) bool {
-		return stringer.Contains(label.Name, text) || stringer.Contains(label.Description, text)
+		return labelNameFilter(label, text) || labelDescriptionFilter(label, text)
 	}, file.Labels...)
 }
 
@@ -106,7 +106,7 @@ func (e ErrFileDescriptorDetails) Error() string {
 	return stringer.Join(" : ", lines...)
 }
 
-func (this ErrFileDescriptorDetails) Unwrap() error {
+func (e ErrFileDescriptorDetails) Unwrap() error {
 	return ErrFileDescriptorErr
 }
 
