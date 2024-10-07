@@ -6,7 +6,7 @@ import (
 
 
 
-templ simpleLabelsList(labels []model.SimpleLabel) {
+templ simpleLabelsList(labels []*model.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
 		{ print("%d", len(labels)) } Labels
 		for _, label := range labels {
@@ -15,7 +15,7 @@ templ simpleLabelsList(labels []model.SimpleLabel) {
 	</div>
 }
 
-templ simpleLabelView(label model.SimpleLabel) {
+templ simpleLabelView(label *model.SimpleLabel) {
 	<button class="btn btn-primary btn-xs">
 		{ label.Name }
 		<div class="badge">{ print("%d", label.Count) }</div>

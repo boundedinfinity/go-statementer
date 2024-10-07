@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/google/uuid"
 )
 
 func New(runtime *runtime.Runtime) *Web {
@@ -101,7 +101,7 @@ func (this *Web) initLabelRoutes() error {
 		desc := c.FormValue("description")
 		label := model.SimpleLabel{Name: name, Description: desc}
 
-		if _, err := this.runtime.Labels.Add(false, label); err != nil {
+		if err := this.runtime.Labels.Add(&label); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -180,11 +180,22 @@ func (this *Web) initFileRoutes() error {
 
 	this.fiber.Post("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		labels := c.FormValue("label")
-		fmt.Println(string(c.Body()))
+		labelIds := this.formValues(c, "label")
 		files := this.runtime.State.Files.ById(id)
 
-		fmt.Println(labels)
+		for _, labelId := range labelIds {
+			id, err := uuid.Parse(labelId)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			if label, ok := this.runtime.Labels.ById(id); ok {
+				files[0].Labels = append(files[0].Labels, label)
+			}
+		}
+
+		if err := this.runtime.SaveState(); err != nil {
+			log.Println(err.Error())
+		}
 
 		return Render(c, fileLabelView(files[0]))
 	})
@@ -241,4 +252,22 @@ func Render(c *fiber.Ctx, component templ.Component) error {
 
 func (this *Web) setTrigger(c *fiber.Ctx, triggers ...string) {
 	c.Response().Header.Add("HX-Trigger", stringer.Join(", ", triggers...))
+}
+
+func (this *Web) formValues(c *fiber.Ctx, name string) []string {
+	body := string(c.Body())
+	body = stringer.Replace(body, "", "?")
+	params := stringer.Split(body, "&")
+	kvs := map[string][]string{}
+
+	for _, param := range params {
+		kv := stringer.Split(param, "=")
+		if _, ok := kvs[kv[0]]; !ok {
+			kvs[kv[0]] = []string{}
+		}
+
+		kvs[kv[0]] = append(kvs[kv[0]], kv[1])
+	}
+
+	return kvs[name]
 }

@@ -8,9 +8,6 @@ import (
 )
 
 func (this *Runtime) LoadState() error {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-
 	_, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir)
 	if err != nil {
 		return err
@@ -32,30 +29,19 @@ func (this *Runtime) LoadState() error {
 		}
 	}
 
-	if _, err := this.Labels.Add(false, this.State.Labels...); err != nil {
+	if err := this.refreshLabels(); err != nil {
 		return err
-	}
-
-	for _, label := range this.Config.Labels {
-		if _, err := this.Labels.Add(false, label); err != nil {
-			return err
-		}
-	}
-
-	for _, file := range this.State.Files {
-		if _, err := this.Labels.Add(true, file.Labels...); err != nil {
-			return err
-		}
 	}
 
 	return nil
 }
 
 func (this *Runtime) SaveState() error {
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
-
 	if _, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir); err != nil {
+		return err
+	}
+
+	if err := this.refreshLabels(); err != nil {
 		return err
 	}
 

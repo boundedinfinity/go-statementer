@@ -11,19 +11,19 @@ import (
 
 func NewFileDescriptor() *FileDescriptor {
 	return &FileDescriptor{
-		Labels: []SimpleLabel{},
+		Labels: []*SimpleLabel{},
 	}
 }
 
 type FileDescriptor struct {
-	Id          uuid.UUID     `json:"id" yaml:"id"`
-	Title       string        `json:"title" yaml:"title"`
-	SourcePaths []string      `json:"source-path" yaml:"source-path"`
-	RepoPath    string        `json:"repo-path" yaml:"repo-path"`
-	Size        Size          `json:"size" yaml:"size"`
-	Extention   string        `json:"extention" yaml:"extention"`
-	Labels      []SimpleLabel `json:"labels" yaml:"labels"`
-	Hash        string        `json:"hash" yaml:"hash"`
+	Id          uuid.UUID      `json:"id" yaml:"id"`
+	Title       string         `json:"title" yaml:"title"`
+	SourcePaths []string       `json:"source-path" yaml:"source-path"`
+	RepoPath    string         `json:"repo-path" yaml:"repo-path"`
+	Size        Size           `json:"size" yaml:"size"`
+	Extention   string         `json:"extention" yaml:"extention"`
+	Labels      []*SimpleLabel `json:"labels" yaml:"labels"`
+	Hash        string         `json:"hash" yaml:"hash"`
 }
 
 func (this *FileDescriptor) Merge(that *FileDescriptor) error {
@@ -72,8 +72,8 @@ func fileExtentionFilter(file *FileDescriptor, text string) bool {
 }
 
 func fileLabelTermFilter(file *FileDescriptor, text string) bool {
-	return slicer.ContainsFn(func(_ int, label SimpleLabel) bool {
-		return labelNameFilter(label, text) || labelDescriptionFilter(label, text)
+	return slicer.ContainsFn(func(_ int, label *SimpleLabel) bool {
+		return labelNameFilter(*label, text) || labelDescriptionFilter(*label, text)
 	}, file.Labels...)
 }
 

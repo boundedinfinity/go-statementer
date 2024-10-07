@@ -5,7 +5,6 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
-	"sync"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/model"
@@ -26,7 +25,6 @@ type Runtime struct {
 	Labels *model.LabelManager
 	logger *logrus.Logger
 	debug  bool
-	mutex  sync.Mutex
 }
 
 func (this *Runtime) OpenRepositoryDir() (string, error) {
