@@ -41,10 +41,6 @@ func (this *Runtime) SaveState() error {
 		return err
 	}
 
-	if err := this.refreshLabels(); err != nil {
-		return err
-	}
-
 	this.State.Labels = this.Labels.All()
 
 	data, err := json.MarshalIndent(this.State, "", "    ")
