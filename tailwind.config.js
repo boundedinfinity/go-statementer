@@ -4,6 +4,12 @@ module.exports = {
   theme: {
     extend: {},
   },
+  // plugins: [require('daisyui')],
   plugins: [],
+  // https://daisyui.com/docs/themes/
+  daisyui: {
+    themes: ["retro", "dim"],
+    darkTheme: "dim"
+  },
 }
 

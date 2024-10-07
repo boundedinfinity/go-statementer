@@ -33,7 +33,7 @@ templ filesDetails(file *model.FileDescriptor) {
 					<tr>
 						<td>Labels:</td>
 						<td>
-							@fileLabelList(file)
+							@fileLabelView(file)
 						</td>
 					</tr>
 					<tr>
@@ -144,6 +144,54 @@ templ filesList(files model.FileDescriptors) {
 				}
 			</tbody>
 		</table>
+	</div>
+}
+
+templ fileLabelView(file *model.FileDescriptor) {
+	<div id="file-labels" class="flex justify-between">
+		@simpleLabelsList(file.Labels)
+		<button
+			hx-patch={ attrPath("/files/label", file.Id.String()) }
+			hx-target="#file-labels"
+			hx-swap="outerHTML"
+			class="btn btn-primary btn-outline btn-xs"
+		>
+			Edit
+		</button>
+	</div>
+}
+
+templ labelCheckBoxen(labels []model.SimpleLabel) {
+	<div class="flex flex-wrap gap-2">
+		for _, label := range labels {
+			<div class="btn btn-primary btn-sm">
+				{ label.Name }
+				<input
+					type="checkbox"
+					class="checkbox checkbox-primary"
+					name="label"
+					value={ label.Id.String() }
+				/>
+			</div>
+		}
+	</div>
+}
+
+templ fileLabelEdit(file *model.FileDescriptor, labels []model.SimpleLabel) {
+	<div id="file-labels">
+		@simpleLabelsList(file.Labels)
+		<form
+			class="flex justify-between border-2 border-primary my-4 p-2 gap-2"
+			hx-post={ attrPath("/files/label", file.Id.String()) }
+			hx-target="#file-labels"
+			hx-swap="outerHTML"
+		>
+			@labelCheckBoxen(labels)
+			<input name="id" type="hidden" value={ file.Id.String() }/>
+			<button class="btn btn-primary btn-outline btn-xs">
+				Save
+			</button>
+		</form>
 	</div>
 }
 

@@ -19,6 +19,7 @@ bootstrap:
 generate:
 	go generate ./...
 	templ generate
+	tailwindcss --input ./assets/css/input.css --output ./assets/css/styles.css --config ./tailwind.config.js
 
 dev:
 	air

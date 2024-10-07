@@ -21,11 +21,7 @@ tmp_dir = "tmp"
   poll = false
   poll_interval = 0
   post_cmd = []
-  pre_cmd = [
-    "go generate ./...", 
-    "templ generate", 
-    "tailwindcss -i ./assets/css/input.css -o ./assets/css/styles.css"
-  ]
+  pre_cmd = ["make generate"]
   rerun = false
   rerun_delay = 500
   send_interrupt = false

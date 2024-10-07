@@ -1,11 +1,13 @@
 package web
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/model"
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/gofiber/fiber/v2"
@@ -45,19 +47,7 @@ func (this *Web) Init() error {
 		return Render(c, home(this.runtime.Config))
 	})
 
-	this.fiber.Get("/files/list", func(c *fiber.Ctx) error {
-		return Render(c, filesList(this.runtime.FilesAll()))
-	})
-
-	this.fiber.Get("/files/duplicates", func(c *fiber.Ctx) error {
-		return Render(c, filesDuplicates(this.runtime.FilesDuplicates()))
-	})
-
-	this.fiber.Get("/files/merge", func(c *fiber.Ctx) error {
-		return nil
-	})
-
-	this.initFileDetails()
+	this.initFileRoutes()
 	this.initLabelRoutes()
 	this.initOtherRoutes()
 
@@ -91,7 +81,7 @@ func (this *Web) initLabelRoutes() error {
 			if err = this.runtime.SaveState(); err != nil {
 				log.Println(err.Error())
 			} else {
-				c.Response().Header.Add("HX-Trigger", "label-updated")
+				this.setTrigger(c, "label-updated")
 			}
 		}
 
@@ -119,15 +109,26 @@ func (this *Web) initLabelRoutes() error {
 			log.Println(err.Error())
 		}
 
-		c.Response().Header.Add("HX-Trigger", "label-updated")
-
+		this.setTrigger(c, "label-updated")
 		return Render(c, labelFormButton())
 	})
 
 	return nil
 }
 
-func (this *Web) initFileDetails() error {
+func (this *Web) initFileRoutes() error {
+	this.fiber.Get("/files/list", func(c *fiber.Ctx) error {
+		return Render(c, filesList(this.runtime.FilesAll()))
+	})
+
+	this.fiber.Get("/files/duplicates", func(c *fiber.Ctx) error {
+		return Render(c, filesDuplicates(this.runtime.FilesDuplicates()))
+	})
+
+	this.fiber.Get("/files/merge", func(c *fiber.Ctx) error {
+		return nil
+	})
+
 	this.fiber.Get("/files/details/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		files := this.runtime.FileGet(id)
@@ -161,8 +162,31 @@ func (this *Web) initFileDetails() error {
 			log.Println(err.Error())
 		}
 
-		c.Response().Header.Add("HX-Trigger", "file-updated")
+		this.setTrigger(c, "file-updated")
 		return Render(c, fileViewTitle(files[0]))
+	})
+
+	this.fiber.Get("/files/label/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		files := this.runtime.State.Files.ById(id)
+		return Render(c, fileLabelView(files[0]))
+	})
+
+	this.fiber.Patch("/files/label/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		files := this.runtime.State.Files.ById(id)
+		return Render(c, fileLabelEdit(files[0], this.runtime.State.Labels))
+	})
+
+	this.fiber.Post("/files/label/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		labels := c.FormValue("label")
+		fmt.Println(string(c.Body()))
+		files := this.runtime.State.Files.ById(id)
+
+		fmt.Println(labels)
+
+		return Render(c, fileLabelView(files[0]))
 	})
 
 	return nil
@@ -213,4 +237,8 @@ func (this *Web) initOtherRoutes() error {
 func Render(c *fiber.Ctx, component templ.Component) error {
 	c.Set("Content-Type", "text/html")
 	return component.Render(c.Context(), c.Response().BodyWriter())
+}
+
+func (this *Web) setTrigger(c *fiber.Ctx, triggers ...string) {
+	c.Response().Header.Add("HX-Trigger", stringer.Join(", ", triggers...))
 }

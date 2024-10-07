@@ -1,13 +1,10 @@
 package web
 
 import (
-	"fmt"
 	"github.com/boundedinfinity/statementer/model"
 )
 
-templ fileLabelList(file *model.FileDescriptor) {
-	@simpleLabelsList(file.Labels)
-}
+
 
 templ simpleLabelsList(labels []model.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
@@ -21,7 +18,7 @@ templ simpleLabelsList(labels []model.SimpleLabel) {
 templ simpleLabelView(label model.SimpleLabel) {
 	<button class="btn btn-primary btn-xs">
 		{ label.Name }
-		<div class="badge">{ fmt.Sprintf("%d", label.Count) }</div>
+		<div class="badge">{ print("%d", label.Count) }</div>
 	</button>
 }
 
