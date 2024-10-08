@@ -7,7 +7,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/go-statementer.go",
-            "args": []
+            "args": [],
         }
     ]
 }

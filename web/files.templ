@@ -170,7 +170,7 @@ templ labelCheckBoxen(labels []*model.SimpleLabel) {
 					type="checkbox"
 					class="checkbox checkbox-primary"
 					name="label"
-					checked={ print("%v", label.Checked) }
+					checked?={ label.Checked }
 					value={ label.Id.String() }
 				/>
 			</div>

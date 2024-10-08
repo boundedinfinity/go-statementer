@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/model"
 	"github.com/boundedinfinity/statementer/runtime"
@@ -175,23 +176,30 @@ func (this *Web) initFileRoutes() error {
 	this.fiber.Patch("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		files := this.runtime.State.Files.ById(id)
-		return Render(c, fileLabelEdit(files[0], this.runtime.State.Labels))
+		return Render(c, fileLabelEdit(
+			files[0],
+			labelSetChecked(this.runtime.State.Labels, files[0].Labels),
+		))
 	})
 
 	this.fiber.Post("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		labelIds := this.formValues(c, "label")
 		files := this.runtime.State.Files.ById(id)
+		labels := []*model.SimpleLabel{}
 
 		for _, labelId := range labelIds {
 			id, err := uuid.Parse(labelId)
 			if err != nil {
 				log.Println(err.Error())
 			}
+
 			if label, ok := this.runtime.Labels.ById(id); ok {
-				files[0].Labels = append(files[0].Labels, label)
+				labels = append(labels, label)
 			}
 		}
+
+		files[0].Labels = labels
 
 		if err := this.runtime.SaveState(); err != nil {
 			log.Println(err.Error())
@@ -201,6 +209,25 @@ func (this *Web) initFileRoutes() error {
 	})
 
 	return nil
+}
+
+func labelSetChecked(all, file []*model.SimpleLabel) []*model.SimpleLabel {
+	copies := slicer.Map(func(_ int, label *model.SimpleLabel) *model.SimpleLabel {
+		copy := model.SimpleLabelCopy(*label)
+		return &copy
+	}, all...)
+
+	group := map[uuid.UUID]*model.SimpleLabel{}
+
+	for _, label := range copies {
+		group[label.Id] = label
+	}
+
+	for _, label := range file {
+		group[label.Id].Checked = true
+	}
+
+	return copies
 }
 
 func (this *Web) initOtherRoutes() error {
