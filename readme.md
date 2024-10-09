@@ -1,19 +1,3 @@
-## Process
-
-```
-set UID (id -u)
-set GID (id -g)
-docker-compose run ocr <image path>
-```
-
-## Shell environment
-
-```
-set UID (id -u)
-set GID (id -g)
-docker-compose run --entrypoint fish ocr
-```
-
 ## Reference
 
 - https://htmx.org
@@ -31,3 +15,10 @@ docker-compose run --entrypoint fish ocr
 - https://developer.mozilla.org
     - [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
 - https://github.com/emarifer/gofiber-templ-htmx
+- Assets
+    - https://www.svgrepo.com
+- R&D
+    - https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html
+    - https://github.com/rclone/rclone
+    - https://rclone.org/docs/
+        - [Remove Control](https://rclone.org/rc/)

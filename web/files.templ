@@ -75,7 +75,7 @@ templ fileViewTitle(file *model.FileDescriptor) {
 			<button
 				hx-patch={ attrPath("/files/title", file.Id.String()) }
 				hx-target="#file-title"
-				class="btn btn-outline btn-xs"
+				class="btn btn-primary btn-outline btn-xs"
 			>
 				Edit
 			</button>
@@ -98,7 +98,7 @@ templ fileEditTitle(file *model.FileDescriptor) {
 				class="input input-bordered flex-1"
 				value={ file.Title }
 			/>
-			<button type="submit" class="btn btn-outline btn-xs">Save</button>
+			<button type="submit" class="btn btn-primary btn-outline btn-xs">Save</button>
 		</form>
 	</div>
 }
@@ -191,6 +191,14 @@ templ fileLabelEdit(file *model.FileDescriptor, labels []*model.SimpleLabel) {
 			<input name="id" type="hidden" value={ file.Id.String() }/>
 			<button class="btn btn-primary btn-outline btn-xs">
 				Save
+			</button>
+			<button
+				class="btn btn-primary btn-outline btn-xs"
+				hx-get={ attrPath("/files/label", file.Id.String()) }
+				hx-target="#file-labels"
+				hx-swap="outerHTML"
+			>
+				Cancel
 			</button>
 		</form>
 	</div>

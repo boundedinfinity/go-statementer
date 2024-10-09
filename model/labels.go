@@ -19,6 +19,8 @@ func SimpleLabelCopy(label SimpleLabel) SimpleLabel {
 		Id:          label.Id,
 		Name:        label.Name,
 		Description: label.Description,
+		Count:       label.Count,
+		Checked:     label.Checked,
 	}
 }
 

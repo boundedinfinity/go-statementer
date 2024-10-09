@@ -1,10 +1,6 @@
 package web
 
-import (
-	"github.com/boundedinfinity/statementer/model"
-)
-
-
+import "github.com/boundedinfinity/statementer/model"
 
 templ simpleLabelsList(labels []*model.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
@@ -27,7 +23,7 @@ templ labelFormButton() {
 		hx-get="/labels/new"
 		hx-target="this"
 		hx-swap="outerHTML"
-		class="btn btn-outline btn-xs m-4"
+		class="btn btn-primary btn-outline btn-xs m-4"
 	>
 		New
 	</button>
@@ -39,6 +35,7 @@ templ labelNewForm() {
 		hx-target="this"
 		hx-swap="outerHTML"
 		class="grid grid-cols-1 gap-2 justify-between align-middle w-full m-4"
+		id="label-new-form"
 	>
 		<input
 			name="name"
@@ -52,7 +49,15 @@ templ labelNewForm() {
 			placeholder="Description goes here..."
 			class="input input-bordered flex-1"
 		/>
-		<button type="submit" class="btn btn-outline btn-xs">Save</button>
+		<button type="submit" class="btn btn-primary btn-outline btn-xs">Save</button>
+		<button
+			class="btn btn-primary btn-outline btn-xs"
+			hx-get="/labels/button"
+			hx-target="#label-new-form"
+			hx-swap="outerHTML"
+		>
+			Cancel
+		</button>
 	</form>
 }
 
