@@ -7,6 +7,7 @@ import (
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
+
 	"github.com/google/uuid"
 )
 
@@ -21,7 +22,34 @@ func SimpleLabelCopy(label SimpleLabel) SimpleLabel {
 		Description: label.Description,
 		Count:       label.Count,
 		Checked:     label.Checked,
+		Selected:    label.Selected,
 	}
+}
+
+func SimpleLabelIds(labels []*SimpleLabel) []uuid.UUID {
+	var uuids []uuid.UUID
+
+	for _, label := range labels {
+		uuids = append(uuids, label.Id)
+	}
+
+	return uuids
+}
+
+func SimpleLabelsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
+	counts := make(map[uuid.UUID]bool, len(labels))
+
+	for _, label := range labels {
+		counts[label.Id] = true
+	}
+
+	for _, selected := range selecteds {
+		if _, ok := counts[selected]; !ok {
+			return false
+		}
+	}
+
+	return true
 }
 
 type SimpleLabel struct {
@@ -30,6 +58,7 @@ type SimpleLabel struct {
 	Description string    `json:"description" yaml:"description"`
 	Count       int       `json:"-" yaml:"-"`
 	Checked     bool      `json:"-" yaml:"-"`
+	Selected    bool      `json:"-" yaml:"-"`
 }
 
 func (this SimpleLabel) Validate() error {
@@ -88,7 +117,35 @@ func NewLabelManager() *LabelManager {
 }
 
 type LabelManager struct {
-	labels []*SimpleLabel
+	labels   []*SimpleLabel
+	Selected []uuid.UUID
+}
+
+func (this *LabelManager) AddSelected(id uuid.UUID) (*SimpleLabel, bool) {
+	if !slicer.Exist(id, this.Selected...) {
+		this.Selected = append(this.Selected, id)
+
+		if label, ok := this.ById(id); ok {
+			label.Selected = true
+			return label, ok
+		}
+	}
+
+	return nil, false
+}
+
+func (this *LabelManager) RemoveSelected(id uuid.UUID) (*SimpleLabel, bool) {
+	if slicer.Exist(id, this.Selected...) {
+		this.Selected = slicer.Filter(func(_ int, current uuid.UUID) bool {
+			return id != current
+		}, this.Selected...)
+
+		if label, ok := this.ById(id); ok {
+			label.Selected = false
+			return label, ok
+		}
+	}
+	return nil, false
 }
 
 func (this *LabelManager) All() []*SimpleLabel {

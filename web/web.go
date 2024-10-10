@@ -56,8 +56,34 @@ func (this *Web) Init() error {
 }
 
 func (this *Web) initLabelRoutes() error {
+	this.fiber.Get("/labels/select/:id", func(c *fiber.Ctx) error {
+		if id, err := uuid.Parse(c.Params("id")); err != nil {
+			log.Println(err.Error())
+		} else {
+			if label, ok := this.runtime.Labels.AddSelected(id); ok {
+				this.setTrigger(c, "label-selected")
+				return Render(c, labelView(label))
+			}
+		}
+
+		return nil
+	})
+
+	this.fiber.Delete("/labels/select/:id", func(c *fiber.Ctx) error {
+		if id, err := uuid.Parse(c.Params("id")); err != nil {
+			log.Println(err.Error())
+		} else {
+			if label, ok := this.runtime.Labels.RemoveSelected(id); ok {
+				this.setTrigger(c, "label-selected")
+				return Render(c, labelView(label))
+			}
+		}
+
+		return nil
+	})
+
 	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
-		return Render(c, simpleLabelsList(this.runtime.Labels.All()))
+		return Render(c, labelList(this.runtime.Labels.All()))
 	})
 
 	this.fiber.Post("/labels/year/:year", func(c *fiber.Ctx) error {
@@ -119,7 +145,7 @@ func (this *Web) initLabelRoutes() error {
 
 func (this *Web) initFileRoutes() error {
 	this.fiber.Get("/files/list", func(c *fiber.Ctx) error {
-		return Render(c, filesList(this.runtime.FilesAll()))
+		return Render(c, filesList(this.runtime.FilesAllFiltered()))
 	})
 
 	this.fiber.Get("/files/duplicates", func(c *fiber.Ctx) error {
@@ -205,6 +231,7 @@ func (this *Web) initFileRoutes() error {
 			log.Println(err.Error())
 		}
 
+		this.setTrigger(c, "file-updated")
 		return Render(c, fileLabelView(files[0]))
 	})
 
@@ -278,6 +305,7 @@ func Render(c *fiber.Ctx, component templ.Component) error {
 }
 
 func (this *Web) setTrigger(c *fiber.Ctx, triggers ...string) {
+	c.Response().Header.DisableNormalizing()
 	c.Response().Header.Add("HX-Trigger", stringer.Join(", ", triggers...))
 }
 

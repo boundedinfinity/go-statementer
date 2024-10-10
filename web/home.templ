@@ -129,7 +129,7 @@ templ home(config model.Config) {
 					<main
 						class="overflow-y-auto border w-4/12"
 						hx-get="/files/list"
-						hx-trigger="load,file-updated"
+						hx-trigger="load,file-updated from:#file-labels,label-selected from:#labels"
 						hx-target="#results"
 					>
 						<div id="results"></div>

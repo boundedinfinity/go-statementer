@@ -125,11 +125,16 @@ templ filesList(files model.FileDescriptors) {
 				for _, file := range files {
 					<tr>
 						<td>
-							if file.Title != "" {
-								{ file.Title }
-							} else {
-								@fileSourcePaths(file)
-							}
+							<div>
+								if file.Title != "" {
+									{ file.Title }
+								} else {
+									@fileSourcePaths(file)
+								}
+							</div>
+							<div class="mt-2">
+								@labelList(file.Labels)
+							</div>
 						</td>
 						<td>
 							<button
@@ -149,7 +154,7 @@ templ filesList(files model.FileDescriptors) {
 
 templ fileLabelView(file *model.FileDescriptor) {
 	<div id="file-labels" class="flex justify-between">
-		@simpleLabelsList(file.Labels)
+		@labelList(file.Labels)
 		<button
 			hx-patch={ attrPath("/files/label", file.Id.String()) }
 			hx-target="#file-labels"
@@ -180,7 +185,7 @@ templ labelCheckBoxen(labels []*model.SimpleLabel) {
 
 templ fileLabelEdit(file *model.FileDescriptor, labels []*model.SimpleLabel) {
 	<div id="file-labels">
-		@simpleLabelsList(file.Labels)
+		@labelList(file.Labels)
 		<form
 			class="flex justify-between border-2 border-primary my-4 p-2 gap-2"
 			hx-post={ attrPath("/files/label", file.Id.String()) }

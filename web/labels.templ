@@ -2,20 +2,36 @@ package web
 
 import "github.com/boundedinfinity/statementer/model"
 
-templ simpleLabelsList(labels []*model.SimpleLabel) {
+templ labelList(labels []*model.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
-		{ print("%d", len(labels)) } Labels
 		for _, label := range labels {
-			@simpleLabelView(label)
+			@labelView(label)
 		}
 	</div>
 }
 
-templ simpleLabelView(label *model.SimpleLabel) {
-	<button class="btn btn-primary btn-xs">
-		{ label.Name }
-		<div class="badge">{ print("%d", label.Count) }</div>
-	</button>
+templ labelView(label *model.SimpleLabel) {
+	if label.Selected {
+		<button
+			hx-delete={ attrPath("/labels/select", label.Id.String()) }
+			hx-target="this"
+			hx-swap="outerHTML"
+			class="btn btn-secondary btn-xs"
+		>
+			{ label.Name }
+			<div class="badge">{ print("%d", label.Count) }</div>
+		</button>
+	} else {
+		<button
+			hx-get={ attrPath("/labels/select", label.Id.String()) }
+			hx-swap="outerHTML"
+			hx-target="this"
+			class="btn btn-primary btn-xs"
+		>
+			{ label.Name }
+			<div class="badge">{ print("%d", label.Count) }</div>
+		</button>
+	}
 }
 
 templ labelFormButton() {

@@ -110,6 +110,22 @@ func (this *Runtime) FilesAll() model.FileDescriptors {
 	return this.State.Files
 }
 
+func (this *Runtime) FilesAllFiltered() model.FileDescriptors {
+	if len(this.Labels.Selected) == 0 {
+		return this.State.Files
+	}
+
+	var files model.FileDescriptors
+
+	for _, file := range this.State.Files {
+		if model.SimpleLabelsSame(file.Labels, this.Labels.Selected) {
+			files = append(files, file)
+		}
+	}
+
+	return files
+}
+
 func (this *Runtime) FileGet(id string) []*model.FileDescriptor {
 	return this.State.Files.ById(id)
 }
