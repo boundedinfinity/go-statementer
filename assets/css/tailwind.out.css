@@ -665,6 +665,10 @@ video {
   width: 50%;
 }
 
+.w-\[8ch\] {
+  width: 8ch;
+}
+
 .w-full {
   width: 100%;
 }

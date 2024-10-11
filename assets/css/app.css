@@ -1,0 +1,3 @@
+.btn-1 {
+    @apply btn btn-secondary btn-outline;
+}

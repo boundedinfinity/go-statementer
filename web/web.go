@@ -2,8 +2,6 @@ package web
 
 import (
 	"log"
-	"strconv"
-	"time"
 
 	"github.com/a-h/templ"
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
@@ -86,25 +84,8 @@ func (this *Web) initLabelRoutes() error {
 		return Render(c, labelList(this.runtime.Labels.All()))
 	})
 
-	this.fiber.Post("/labels/year/:year", func(c *fiber.Ctx) error {
-		year := c.Params("year")
-		var yearInt int
-		var err error
-
-		if year == "this" {
-			yearInt = time.Now().Year()
-		} else {
-			yearInt, err = strconv.Atoi(year)
-			if err != nil {
-				log.Println(err.Error())
-			}
-		}
-
-		if err = this.runtime.Labels.GenerateYear(yearInt); err != nil {
-			log.Println(err.Error())
-		}
-
-		if err == nil {
+	this.fiber.Post("/labels/year", func(c *fiber.Ctx) error {
+		if err := this.runtime.Labels.GenerateYearStr(c.FormValue("year")); err != nil {
 			if err = this.runtime.SaveState(); err != nil {
 				log.Println(err.Error())
 			} else {
@@ -112,7 +93,7 @@ func (this *Web) initLabelRoutes() error {
 			}
 		}
 
-		return nil
+		return Render(c, newYearLabels())
 	})
 
 	this.fiber.Get("/labels/button", func(c *fiber.Ctx) error {
@@ -215,12 +196,7 @@ func (this *Web) initFileRoutes() error {
 		labels := []*model.SimpleLabel{}
 
 		for _, labelId := range labelIds {
-			id, err := uuid.Parse(labelId)
-			if err != nil {
-				log.Println(err.Error())
-			}
-
-			if label, ok := this.runtime.Labels.ById(id); ok {
+			if label, ok := this.runtime.Labels.ByIdStr(labelId); ok {
 				labels = append(labels, label)
 			}
 		}
@@ -240,7 +216,7 @@ func (this *Web) initFileRoutes() error {
 
 func labelSetChecked(all, file []*model.SimpleLabel) []*model.SimpleLabel {
 	copies := slicer.Map(func(_ int, label *model.SimpleLabel) *model.SimpleLabel {
-		copy := model.SimpleLabelCopy(*label)
+		copy := model.Labels.Copy(*label)
 		return &copy
 	}, all...)
 

@@ -169,3 +169,45 @@ func (this FileDescriptors) filter(text string, fns ...func(*FileDescriptor, str
 
 	return found
 }
+
+// =====================================================================================
+// File Persistence Model
+// =====================================================================================
+
+type FilePersistenceModel struct {
+	Id          uuid.UUID   `json:"id" yaml:"id"`
+	Title       string      `json:"title" yaml:"title"`
+	SourcePaths []string    `json:"source-path" yaml:"source-path"`
+	RepoPath    string      `json:"repo-path" yaml:"repo-path"`
+	Size        Size        `json:"size" yaml:"size"`
+	Extention   string      `json:"extention" yaml:"extention"`
+	Labels      []uuid.UUID `json:"labels" yaml:"labels"`
+	Hash        string      `json:"hash" yaml:"hash"`
+}
+
+// =====================================================================================
+// File Companion
+// =====================================================================================
+
+var Files = files{}
+
+type files struct{}
+
+func (this files) Model2Persist(files ...*FileDescriptor) []FilePersistenceModel {
+	return slicer.Map(func(_ int, file *FileDescriptor) FilePersistenceModel {
+		return FilePersistenceModel{
+			Id:          file.Id,
+			Title:       file.Title,
+			SourcePaths: file.SourcePaths,
+			RepoPath:    file.RepoPath,
+			Size:        file.Size,
+			Extention:   file.Extention,
+			Labels:      Labels.GetIds(file.Labels),
+			Hash:        file.Hash,
+		}
+	})
+}
+
+func (this files) Model2Persist1(file *FileDescriptor) FilePersistenceModel {
+	return this.Model2Persist(file)[0]
+}

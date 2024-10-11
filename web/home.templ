@@ -44,7 +44,8 @@ templ home(config model.Config) {
 			<meta name="htmx-config" content='{"globalViewTransitions":"true"}'/>
 			<link rel="shortcut icon" href="/img/gopher-svgrepo-com.svg" type="image/svg+xml"/>
 			<link href="/css/daisyui.min.css" rel="stylesheet"/>
-			<link href="/css/styles.css" rel="stylesheet" type="text/css"/>
+			<link href="/css/tailwind.out.css" rel="stylesheet" type="text/css"/>
+			<link href="/css/app.css" rel="stylesheet" type="text/css"/>
 			<script src="/js/tailwind.min.js"></script>
 			<script src="/js/htmx.min.js"></script>
 			<title>Bounded Infinity : Statement Management System</title>
@@ -53,7 +54,7 @@ templ home(config model.Config) {
 			<div class="min-h-screen flex flex-col h-screen gap-2 min-w-full p-2">
 				<header
 					hx-get="/labels/all"
-					hx-trigger="load,label-updated"
+					hx-trigger="load,label-updated from:#generate-year"
 					hx-target="#labels"
 					class="p-2 mt-2 border-2 border-r-2 border-slate-600"
 				>
@@ -74,7 +75,7 @@ templ home(config model.Config) {
 							<button
 								hx-get="/open/config-file"
 								hx-target="#stdout"
-								class="btn btn-primary btn-outline"
+								class="btn btn-primary btn-outline btn-sm"
 							>
 								{ config.ConfigPath }
 							</button>
@@ -86,7 +87,7 @@ templ home(config model.Config) {
 							<button
 								hx-get="/open/repository-dir"
 								hx-target="#stdout"
-								class="btn btn-primary btn-outline"
+								class="btn btn-primary btn-outline btn-sm"
 							>
 								{ config.RepositoryDir }
 							</button>
@@ -98,7 +99,7 @@ templ home(config model.Config) {
 							<button
 								hx-get="/open/source-dir"
 								hx-target="#stdout"
-								class="btn btn-primary btn-outline"
+								class="btn btn-primary btn-outline btn-sm"
 							>
 								{ config.SourceDir }
 							</button>
@@ -107,24 +108,18 @@ templ home(config model.Config) {
 						<button
 							hx-get="/files/list"
 							hx-target="#results"
-							class="btn btn-primary btn-outline"
+							class="btn btn-primary btn-outline btn-sm"
 						>
 							All Files
 						</button>
 						<button
 							hx-get="/files/duplicates"
 							hx-target="#results"
-							class="btn btn-primary btn-outline"
+							class="btn btn-primary btn-outline btn-sm"
 						>
 							Duplicate Files
 						</button>
-						<button
-							hx-post="/labels/year/this"
-							hx-swap="none"
-							class="btn btn-primary btn-outline"
-						>
-							Generate Labels for this year
-						</button>
+						@newYearLabels()
 					</nav>
 					<main
 						class="overflow-y-auto border w-4/12"
@@ -148,3 +143,4 @@ templ home(config model.Config) {
 		</body>
 	</html>
 }
+

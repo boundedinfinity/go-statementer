@@ -3,6 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
@@ -12,10 +14,14 @@ import (
 )
 
 // =====================================================================================
-// Simple Label
+// Simple Label Companion
 // =====================================================================================
 
-func SimpleLabelCopy(label SimpleLabel) SimpleLabel {
+var Labels = labels{}
+
+type labels struct{}
+
+func (this labels) Copy(label SimpleLabel) SimpleLabel {
 	return SimpleLabel{
 		Id:          label.Id,
 		Name:        label.Name,
@@ -26,7 +32,7 @@ func SimpleLabelCopy(label SimpleLabel) SimpleLabel {
 	}
 }
 
-func SimpleLabelIds(labels []*SimpleLabel) []uuid.UUID {
+func (this labels) GetIds(labels []*SimpleLabel) []uuid.UUID {
 	var uuids []uuid.UUID
 
 	for _, label := range labels {
@@ -36,7 +42,7 @@ func SimpleLabelIds(labels []*SimpleLabel) []uuid.UUID {
 	return uuids
 }
 
-func SimpleLabelsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
+func (this labels) IsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
 	counts := make(map[uuid.UUID]bool, len(labels))
 
 	for _, label := range labels {
@@ -51,6 +57,10 @@ func SimpleLabelsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
 
 	return true
 }
+
+// =====================================================================================
+// Simple Label
+// =====================================================================================
 
 type SimpleLabel struct {
 	Id          uuid.UUID `json:"id" yaml:"id"`
@@ -158,12 +168,25 @@ func (this *LabelManager) Reset() {
 	this.labels = []*SimpleLabel{}
 }
 
+func (this *LabelManager) GenerateYearStr(year string) error {
+	if yearInt, err := strconv.Atoi(year); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		return this.GenerateYear(yearInt)
+	}
+}
 func (this *LabelManager) GenerateYear(year int) error {
 	var labels []*SimpleLabel
 
+	labels = append(labels, &SimpleLabel{
+		Name: fmt.Sprintf("%04d", year),
+	})
+
 	for month := time.January; month <= time.December; month++ {
 		labels = append(labels, &SimpleLabel{
-			Name: fmt.Sprintf("%04d.%02d", year, month),
+			Name:        fmt.Sprintf("%04d.%02d", year, month),
+			Description: fmt.Sprintf("%s %d", month.String(), year),
 		})
 	}
 
@@ -172,6 +195,17 @@ func (this *LabelManager) GenerateYear(year int) error {
 	}
 
 	return nil
+}
+
+func (this *LabelManager) ByIdStr(id string) (*SimpleLabel, bool) {
+	idP, err := uuid.Parse(id)
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, false
+	}
+
+	return this.ById(idP)
 }
 
 func (this *LabelManager) ById(id uuid.UUID) (*SimpleLabel, bool) {

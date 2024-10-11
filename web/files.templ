@@ -166,23 +166,6 @@ templ fileLabelView(file *model.FileDescriptor) {
 	</div>
 }
 
-templ labelCheckBoxen(labels []*model.SimpleLabel) {
-	<div class="flex flex-wrap gap-2">
-		for _, label := range labels {
-			<div class="btn btn-primary btn-sm">
-				{ label.Name }
-				<input
-					type="checkbox"
-					class="checkbox checkbox-primary"
-					name="label"
-					checked?={ label.Checked }
-					value={ label.Id.String() }
-				/>
-			</div>
-		}
-	</div>
-}
-
 templ fileLabelEdit(file *model.FileDescriptor, labels []*model.SimpleLabel) {
 	<div id="file-labels">
 		@labelList(file.Labels)
