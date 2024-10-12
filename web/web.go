@@ -185,7 +185,7 @@ func (this *Web) initFileRoutes() error {
 		files := this.runtime.State.Files.ById(id)
 		return Render(c, fileLabelEdit(
 			files[0],
-			labelSetChecked(this.runtime.State.Labels, files[0].Labels),
+			this.labelSetChecked(this.runtime.State.Labels, files[0].Labels),
 		))
 	})
 
@@ -214,9 +214,9 @@ func (this *Web) initFileRoutes() error {
 	return nil
 }
 
-func labelSetChecked(all, file []*model.SimpleLabel) []*model.SimpleLabel {
+func (this *Web) labelSetChecked(all, file []*model.SimpleLabel) []*model.SimpleLabel {
 	copies := slicer.Map(func(_ int, label *model.SimpleLabel) *model.SimpleLabel {
-		copy := model.Labels.Copy(*label)
+		copy := this.runtime.Labels.Copy(*label)
 		return &copy
 	}, all...)
 

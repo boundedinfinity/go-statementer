@@ -186,14 +186,14 @@ type FilePersistenceModel struct {
 }
 
 // =====================================================================================
-// File Companion
+// Companion
 // =====================================================================================
 
 var Files = files{}
 
 type files struct{}
 
-func (this files) Model2Persist(files ...*FileDescriptor) []FilePersistenceModel {
+func (this files) Model2Persist(lm *LabelManager, files ...*FileDescriptor) []FilePersistenceModel {
 	return slicer.Map(func(_ int, file *FileDescriptor) FilePersistenceModel {
 		return FilePersistenceModel{
 			Id:          file.Id,
@@ -202,12 +202,38 @@ func (this files) Model2Persist(files ...*FileDescriptor) []FilePersistenceModel
 			RepoPath:    file.RepoPath,
 			Size:        file.Size,
 			Extention:   file.Extention,
-			Labels:      Labels.GetIds(file.Labels),
+			Labels:      lm.Ids(file.Labels),
 			Hash:        file.Hash,
 		}
-	})
+	}, files...)
 }
 
-func (this files) Model2Persist1(file *FileDescriptor) FilePersistenceModel {
-	return this.Model2Persist(file)[0]
+func (this files) Model2Persist1(lm *LabelManager, file *FileDescriptor) FilePersistenceModel {
+	return this.Model2Persist(lm, file)[0]
+}
+
+func (this files) Persist2Model(lm *LabelManager, files ...FilePersistenceModel) []*FileDescriptor {
+	var descriptors []*FileDescriptor
+
+	for _, persist := range files {
+		descriptor := &FileDescriptor{
+			Id:          persist.Id,
+			Title:       persist.Title,
+			SourcePaths: persist.SourcePaths,
+			RepoPath:    persist.RepoPath,
+			Size:        persist.Size,
+			Extention:   persist.Extention,
+			Hash:        persist.Hash,
+		}
+
+		for _, id := range persist.Labels {
+			if label, ok := lm.ById(id); ok {
+				descriptor.Labels = append(descriptor.Labels, label)
+			}
+		}
+
+		descriptors = append(descriptors, descriptor)
+	}
+
+	return descriptors
 }

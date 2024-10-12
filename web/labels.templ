@@ -30,7 +30,7 @@ templ labelView(label *model.SimpleLabel) {
 			class="btn btn-primary btn-xs"
 			title={label.Description}
 		>
-			{ label.Description }
+			{ label.Name }
 			<div class="badge">{ print("%d", label.Count) }</div>
 		</button>
 	}

@@ -3,72 +3,22 @@ package model
 import (
 	"errors"
 	"fmt"
-	"log"
-	"strconv"
-	"time"
-
-	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
-	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 
 	"github.com/google/uuid"
 )
-
-// =====================================================================================
-// Simple Label Companion
-// =====================================================================================
-
-var Labels = labels{}
-
-type labels struct{}
-
-func (this labels) Copy(label SimpleLabel) SimpleLabel {
-	return SimpleLabel{
-		Id:          label.Id,
-		Name:        label.Name,
-		Description: label.Description,
-		Count:       label.Count,
-		Checked:     label.Checked,
-		Selected:    label.Selected,
-	}
-}
-
-func (this labels) GetIds(labels []*SimpleLabel) []uuid.UUID {
-	var uuids []uuid.UUID
-
-	for _, label := range labels {
-		uuids = append(uuids, label.Id)
-	}
-
-	return uuids
-}
-
-func (this labels) IsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
-	counts := make(map[uuid.UUID]bool, len(labels))
-
-	for _, label := range labels {
-		counts[label.Id] = true
-	}
-
-	for _, selected := range selecteds {
-		if _, ok := counts[selected]; !ok {
-			return false
-		}
-	}
-
-	return true
-}
 
 // =====================================================================================
 // Simple Label
 // =====================================================================================
 
 type SimpleLabel struct {
-	Id          uuid.UUID `json:"id" yaml:"id"`
-	Name        string    `json:"name" yaml:"name"`
-	Description string    `json:"description" yaml:"description"`
-	Count       int       `json:"-" yaml:"-"`
-	Checked     bool      `json:"-" yaml:"-"`
-	Selected    bool      `json:"-" yaml:"-"`
+	Parent      *SimpleLabel `json:"parent" yaml:"parent"`
+	Id          uuid.UUID    `json:"id" yaml:"id"`
+	Name        string       `json:"name" yaml:"name"`
+	Description string       `json:"description" yaml:"description"`
+	Count       int          `json:"-" yaml:"-"`
+	Checked     bool         `json:"-" yaml:"-"`
+	Selected    bool         `json:"-" yaml:"-"`
 }
 
 func (this SimpleLabel) Validate() error {
@@ -89,16 +39,25 @@ func (this SimpleLabel) Validate() error {
 	return nil
 }
 
-func labelNameFilter(label SimpleLabel, text string) bool {
-	return stringer.Contains(label.Name, text)
+// =====================================================================================
+// File Persistence Model
+// =====================================================================================
+
+type SimpleLabelPersistenceModelV1 struct {
+	Id          uuid.UUID `json:"id" yaml:"id"`
+	Name        string    `json:"name" yaml:"name"`
+	Description string    `json:"description" yaml:"description"`
 }
 
-func labelDescriptionFilter(label SimpleLabel, text string) bool {
-	return stringer.Contains(label.Description, text)
+type SimpleLabelPersistenceModelV2 struct {
+	Parent      uuid.UUID `json:"parent" yaml:"parent"`
+	Id          uuid.UUID `json:"id" yaml:"id"`
+	Name        string    `json:"name" yaml:"name"`
+	Description string    `json:"description" yaml:"description"`
 }
 
 // =====================================================================================
-// Label Errors
+// Errors
 // =====================================================================================
 
 var ErrLabelValidation = errors.New("label validation error")
@@ -117,208 +76,49 @@ func (this ErrLabelValidationDetails) Unwrap() error {
 }
 
 // =====================================================================================
-// LabelManager
+// Companion
 // =====================================================================================
 
-func NewLabelManager() *LabelManager {
-	return &LabelManager{
-		labels: []*SimpleLabel{},
-	}
-}
+var Labels = labels{}
 
-type LabelManager struct {
-	labels   []*SimpleLabel
-	Selected []uuid.UUID
-}
+type labels struct{}
 
-func (this *LabelManager) AddSelected(id uuid.UUID) (*SimpleLabel, bool) {
-	if !slicer.Exist(id, this.Selected...) {
-		this.Selected = append(this.Selected, id)
+func (this labels) M2P(labels ...*SimpleLabel) []SimpleLabelPersistenceModelV2 {
+	var persists []SimpleLabelPersistenceModelV2
 
-		if label, ok := this.ById(id); ok {
-			label.Selected = true
-			return label, ok
+	for _, label := range labels {
+		persist := SimpleLabelPersistenceModelV2{
+			Id:          label.Id,
+			Name:        label.Name,
+			Description: label.Description,
 		}
-	}
 
-	return nil, false
-}
-
-func (this *LabelManager) RemoveSelected(id uuid.UUID) (*SimpleLabel, bool) {
-	if slicer.Exist(id, this.Selected...) {
-		this.Selected = slicer.Filter(func(_ int, current uuid.UUID) bool {
-			return id != current
-		}, this.Selected...)
-
-		if label, ok := this.ById(id); ok {
-			label.Selected = false
-			return label, ok
+		if label.Parent != nil {
+			persist.Parent = label.Id
 		}
+
+		persists = append(persists, persist)
 	}
-	return nil, false
+
+	return persists
 }
 
-func (this *LabelManager) All() []*SimpleLabel {
-	return this.labels
-}
-
-var ErrLabelManagerErr = errors.New("label manager error")
-
-func (this *LabelManager) Reset() {
-	this.labels = []*SimpleLabel{}
-}
-
-func (this *LabelManager) GenerateYearStr(year string) error {
-	if yearInt, err := strconv.Atoi(year); err != nil {
-		log.Println(err.Error())
-		return err
-	} else {
-		return this.GenerateYear(yearInt)
-	}
-}
-func (this *LabelManager) GenerateYear(year int) error {
+func (this labels) P2M(persists ...SimpleLabelPersistenceModelV2) []*SimpleLabel {
 	var labels []*SimpleLabel
 
-	labels = append(labels, &SimpleLabel{
-		Name: fmt.Sprintf("%04d", year),
-	})
-
-	for month := time.January; month <= time.December; month++ {
-		labels = append(labels, &SimpleLabel{
-			Name:        fmt.Sprintf("%04d.%02d", year, month),
-			Description: fmt.Sprintf("%s %d", month.String(), year),
-		})
-	}
-
-	if err := this.Add(labels...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (this *LabelManager) ByIdStr(id string) (*SimpleLabel, bool) {
-	idP, err := uuid.Parse(id)
-
-	if err != nil {
-		log.Println(err.Error())
-		return nil, false
-	}
-
-	return this.ById(idP)
-}
-
-func (this *LabelManager) ById(id uuid.UUID) (*SimpleLabel, bool) {
-	for _, label := range this.labels {
-		if label.Id == id {
-			return label, true
-		}
-	}
-
-	return nil, false
-}
-
-func (this *LabelManager) ByName(name string) (*SimpleLabel, bool) {
-	name = stringer.Lowercase(name)
-
-	for _, label := range this.labels {
-		if stringer.Lowercase(label.Name) == name {
-			return label, true
-		}
-	}
-
-	return nil, false
-}
-
-func (this *LabelManager) Add(labels ...*SimpleLabel) error {
-	for _, label := range labels {
-		if err := this.add(label); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (this *LabelManager) add(label *SimpleLabel) error {
-	if label == nil {
-		return nil
-	}
-
-	if err := label.Validate(); err != nil {
-		return NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
-	}
-
-	var found *SimpleLabel
-	var ok bool
-
-	if !uuidIsZero(label.Id) {
-		if found, ok = this.ById(label.Id); ok {
-			return nil
-		}
-	}
-
-	if !ok {
-		if found, ok = this.ByName(label.Name); ok {
-			return nil
-		}
-	}
-	// TODO check name and descriptions dups
-
-	if !ok {
-		found = label
-
-		if uuidIsZero(found.Id) {
-			found.Id = uuid.New()
+	for _, persist := range persists {
+		label := SimpleLabel{
+			Id:          persist.Id,
+			Name:        persist.Name,
+			Description: persist.Description,
 		}
 
-		this.labels = append(this.labels, found)
-	} else {
-		label = found
-	}
-
-	this.labels = slicer.SortFn(func(label *SimpleLabel) string {
-		return label.Name
-	}, this.labels...)
-
-	return nil
-}
-
-func (this *LabelManager) Count(labels ...*SimpleLabel) error {
-	for _, label := range labels {
-		if err := this.count(label); err != nil {
-			return err
+		if !Ids.IsZero(persist.Parent) {
+			label.Parent = &SimpleLabel{Id: persist.Id}
 		}
+
+		labels = append(labels, &label)
 	}
 
-	return nil
-}
-
-func (this *LabelManager) count(label *SimpleLabel) error {
-	if err := label.Validate(); err != nil {
-		return NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
-	}
-
-	var found *SimpleLabel
-	var ok bool
-
-	if uuidIsZero(label.Id) {
-		return NewGenericErrorWrapper(label).WithErrs(
-			ErrLabelManagerErr,
-			fmt.Errorf("label without ID: %+v", label),
-		)
-	}
-
-	found, ok = this.ById(label.Id)
-
-	if !ok {
-		return NewGenericErrorWrapper(label).WithErrs(
-			ErrLabelManagerErr,
-			fmt.Errorf("no label found with ID: %s", label.Id),
-		)
-	}
-
-	found.Count++
-
-	return nil
+	return labels
 }

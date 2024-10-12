@@ -21,7 +21,7 @@ func New(logger *logrus.Logger) *Runtime {
 
 type Runtime struct {
 	Config model.Config
-	State  model.State
+	State  model.StateV1
 	Labels *model.LabelManager
 	logger *logrus.Logger
 	debug  bool

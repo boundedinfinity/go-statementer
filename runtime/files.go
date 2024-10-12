@@ -114,7 +114,7 @@ func (this *Runtime) FilesAllFiltered() model.FileDescriptors {
 	var files model.FileDescriptors
 
 	for _, file := range this.State.Files {
-		if model.Labels.IsSame(file.Labels, this.Labels.Selected) {
+		if this.Labels.IsSame(file.Labels, this.Labels.Selected) {
 			files = append(files, file)
 		}
 	}
