@@ -6,7 +6,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
-	"github.com/boundedinfinity/statementer/model"
+	"github.com/boundedinfinity/statementer/label"
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -81,7 +81,7 @@ func (this *Web) initLabelRoutes() error {
 	})
 
 	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
-		return Render(c, labelList(this.runtime.Labels.All()))
+		return Render(c, labelList(this.runtime.Labels.List()))
 	})
 
 	this.fiber.Post("/labels/year", func(c *fiber.Ctx) error {
@@ -107,7 +107,7 @@ func (this *Web) initLabelRoutes() error {
 	this.fiber.Post("/labels/new", func(c *fiber.Ctx) error {
 		name := c.FormValue("name")
 		desc := c.FormValue("description")
-		label := model.SimpleLabel{Name: name, Description: desc}
+		label := label.SimpleLabel{Name: name, Description: desc}
 
 		if err := this.runtime.Labels.Add(&label); err != nil {
 			log.Println(err.Error())
@@ -193,7 +193,7 @@ func (this *Web) initFileRoutes() error {
 		id := c.Params("id")
 		labelIds := this.formValues(c, "label")
 		files := this.runtime.State.Files.ById(id)
-		labels := []*model.SimpleLabel{}
+		labels := []*label.SimpleLabel{}
 
 		for _, labelId := range labelIds {
 			if label, ok := this.runtime.Labels.ByIdStr(labelId); ok {
@@ -214,13 +214,13 @@ func (this *Web) initFileRoutes() error {
 	return nil
 }
 
-func (this *Web) labelSetChecked(all, file []*model.SimpleLabel) []*model.SimpleLabel {
-	copies := slicer.Map(func(_ int, label *model.SimpleLabel) *model.SimpleLabel {
+func (this *Web) labelSetChecked(all, file []*label.SimpleLabel) []*label.SimpleLabel {
+	copies := slicer.Map(func(_ int, label *label.SimpleLabel) *label.SimpleLabel {
 		copy := this.runtime.Labels.Copy(*label)
 		return &copy
 	}, all...)
 
-	group := map[uuid.UUID]*model.SimpleLabel{}
+	group := map[uuid.UUID]*label.SimpleLabel{}
 
 	for _, label := range copies {
 		group[label.Id] = label

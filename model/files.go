@@ -6,24 +6,25 @@ import (
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
+	"github.com/boundedinfinity/statementer/label"
 	"github.com/google/uuid"
 )
 
 func NewFileDescriptor() *FileDescriptor {
 	return &FileDescriptor{
-		Labels: []*SimpleLabel{},
+		Labels: []*label.SimpleLabel{},
 	}
 }
 
 type FileDescriptor struct {
-	Id          uuid.UUID      `json:"id" yaml:"id"`
-	Title       string         `json:"title" yaml:"title"`
-	SourcePaths []string       `json:"source-path" yaml:"source-path"`
-	RepoPath    string         `json:"repo-path" yaml:"repo-path"`
-	Size        Size           `json:"size" yaml:"size"`
-	Extention   string         `json:"extention" yaml:"extention"`
-	Labels      []*SimpleLabel `json:"labels" yaml:"labels"`
-	Hash        string         `json:"hash" yaml:"hash"`
+	Id          uuid.UUID            `json:"id" yaml:"id"`
+	Title       string               `json:"title" yaml:"title"`
+	SourcePaths []string             `json:"source-path" yaml:"source-path"`
+	RepoPath    string               `json:"repo-path" yaml:"repo-path"`
+	Size        Size                 `json:"size" yaml:"size"`
+	Extention   string               `json:"extention" yaml:"extention"`
+	Labels      []*label.SimpleLabel `json:"labels" yaml:"labels"`
+	Hash        string               `json:"hash" yaml:"hash"`
 }
 
 func (this *FileDescriptor) Merge(that *FileDescriptor) error {
@@ -72,9 +73,7 @@ func fileExtentionFilter(file *FileDescriptor, text string) bool {
 }
 
 func fileLabelTermFilter(file *FileDescriptor, text string) bool {
-	return slicer.ContainsFn(func(_ int, label *SimpleLabel) bool {
-		return labelNameFilter(*label, text) || labelDescriptionFilter(*label, text)
-	}, file.Labels...)
+	return slicer.ContainsFn(label.ContainsFilter(text), file.Labels...)
 }
 
 // =====================================================================================
@@ -193,7 +192,7 @@ var Files = files{}
 
 type files struct{}
 
-func (this files) Model2Persist(lm *LabelManager, files ...*FileDescriptor) []FilePersistenceModel {
+func (this files) Model2Persist(lm *label.LabelManager, files ...*FileDescriptor) []FilePersistenceModel {
 	return slicer.Map(func(_ int, file *FileDescriptor) FilePersistenceModel {
 		return FilePersistenceModel{
 			Id:          file.Id,
@@ -208,11 +207,11 @@ func (this files) Model2Persist(lm *LabelManager, files ...*FileDescriptor) []Fi
 	}, files...)
 }
 
-func (this files) Model2Persist1(lm *LabelManager, file *FileDescriptor) FilePersistenceModel {
+func (this files) Model2Persist1(lm *label.LabelManager, file *FileDescriptor) FilePersistenceModel {
 	return this.Model2Persist(lm, file)[0]
 }
 
-func (this files) Persist2Model(lm *LabelManager, files ...FilePersistenceModel) []*FileDescriptor {
+func (this files) Persist2Model(lm *label.LabelManager, files ...FilePersistenceModel) []*FileDescriptor {
 	var descriptors []*FileDescriptor
 
 	for _, persist := range files {

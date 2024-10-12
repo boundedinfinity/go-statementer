@@ -1,4 +1,4 @@
-package model
+package label
 
 import (
 	"errors"
@@ -12,13 +12,14 @@ import (
 // =====================================================================================
 
 type SimpleLabel struct {
-	Parent      *SimpleLabel `json:"parent" yaml:"parent"`
-	Id          uuid.UUID    `json:"id" yaml:"id"`
-	Name        string       `json:"name" yaml:"name"`
-	Description string       `json:"description" yaml:"description"`
-	Count       int          `json:"-" yaml:"-"`
-	Checked     bool         `json:"-" yaml:"-"`
-	Selected    bool         `json:"-" yaml:"-"`
+	Parent      *SimpleLabel
+	Children    []*SimpleLabel
+	Id          uuid.UUID
+	Name        string
+	Description string
+	Count       int
+	Checked     bool
+	Selected    bool
 }
 
 func (this SimpleLabel) Validate() error {
@@ -68,57 +69,9 @@ type ErrLabelValidationDetails struct {
 }
 
 func (this ErrLabelValidationDetails) Error() string {
-	return fmt.Sprintf("%s : %s : %v", ErrFileDescriptorErr.Error(), this.message, this.label)
+	return fmt.Sprintf("%s : %s : %v", ErrLabelValidation.Error(), this.message, this.label)
 }
 
 func (this ErrLabelValidationDetails) Unwrap() error {
 	return ErrLabelValidation
-}
-
-// =====================================================================================
-// Companion
-// =====================================================================================
-
-var Labels = labels{}
-
-type labels struct{}
-
-func (this labels) M2P(labels ...*SimpleLabel) []SimpleLabelPersistenceModelV2 {
-	var persists []SimpleLabelPersistenceModelV2
-
-	for _, label := range labels {
-		persist := SimpleLabelPersistenceModelV2{
-			Id:          label.Id,
-			Name:        label.Name,
-			Description: label.Description,
-		}
-
-		if label.Parent != nil {
-			persist.Parent = label.Id
-		}
-
-		persists = append(persists, persist)
-	}
-
-	return persists
-}
-
-func (this labels) P2M(persists ...SimpleLabelPersistenceModelV2) []*SimpleLabel {
-	var labels []*SimpleLabel
-
-	for _, persist := range persists {
-		label := SimpleLabel{
-			Id:          persist.Id,
-			Name:        persist.Name,
-			Description: persist.Description,
-		}
-
-		if !Ids.IsZero(persist.Parent) {
-			label.Parent = &SimpleLabel{Id: persist.Id}
-		}
-
-		labels = append(labels, &label)
-	}
-
-	return labels
 }

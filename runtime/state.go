@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/pather"
+	"github.com/boundedinfinity/statementer/label"
 	"github.com/boundedinfinity/statementer/model"
 )
 
@@ -55,7 +56,7 @@ func (this *Runtime) LoadState() error {
 		}
 	}
 
-	if err := this.Labels.Add(model.Labels.P2M(state.Labels...)...); err != nil {
+	if err := this.Labels.Add(label.Labels.P2M(state.Labels...)...); err != nil {
 		return err
 	}
 
@@ -69,7 +70,7 @@ func (this *Runtime) LoadState() error {
 		}
 	}
 
-	if err := this.Labels.ResolveParents(); err != nil {
+	if err := this.Labels.ResolveInit(); err != nil {
 		return err
 	}
 
@@ -89,7 +90,7 @@ func (this *Runtime) SaveState() error {
 
 	state := model.StateV2{
 		Version:        "2",
-		Labels:         model.Labels.M2P(this.Labels.All()...),
+		Labels:         label.Labels.M2P(this.Labels.List()...),
 		Files:          model.Files.Model2Persist(this.Labels, this.State.Files...),
 		SelectedLabels: this.Labels.Selected,
 	}

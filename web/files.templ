@@ -1,6 +1,9 @@
 package web
 
-import "github.com/boundedinfinity/statementer/model"
+import (
+	"github.com/boundedinfinity/statementer/label"
+	"github.com/boundedinfinity/statementer/model"
+)
 
 templ filesDetails(file *model.FileDescriptor) {
 	<div
@@ -166,7 +169,7 @@ templ fileLabelView(file *model.FileDescriptor) {
 	</div>
 }
 
-templ fileLabelEdit(file *model.FileDescriptor, labels []*model.SimpleLabel) {
+templ fileLabelEdit(file *model.FileDescriptor, labels []*label.SimpleLabel) {
 	<div id="file-labels">
 		@labelList(file.Labels)
 		<form

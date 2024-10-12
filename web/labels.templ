@@ -1,8 +1,8 @@
 package web
 
-import "github.com/boundedinfinity/statementer/model"
+import "github.com/boundedinfinity/statementer/label"
 
-templ labelList(labels []*model.SimpleLabel) {
+templ labelList(labels []*label.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
 		for _, label := range labels {
 			@labelView(label)
@@ -10,14 +10,14 @@ templ labelList(labels []*model.SimpleLabel) {
 	</div>
 }
 
-templ labelView(label *model.SimpleLabel) {
+templ labelView(label *label.SimpleLabel) {
 	if label.Selected {
 		<button
 			hx-delete={ attrPath("/labels/select", label.Id.String()) }
 			hx-target="this"
 			hx-swap="outerHTML"
 			class="btn btn-secondary btn-xs"
-			title={label.Description}
+			title={ label.Description }
 		>
 			{ label.Name }
 			<div class="badge">{ print("%d", label.Count) }</div>
@@ -28,7 +28,7 @@ templ labelView(label *model.SimpleLabel) {
 			hx-swap="outerHTML"
 			hx-target="this"
 			class="btn btn-primary btn-xs"
-			title={label.Description}
+			title={ label.Description }
 		>
 			{ label.Name }
 			<div class="badge">{ print("%d", label.Count) }</div>
@@ -79,7 +79,7 @@ templ labelNewForm() {
 	</form>
 }
 
-templ labelDetailsView(label model.SimpleLabel) {
+templ labelDetailsView(label label.SimpleLabel) {
 	<div id="file-title" class="w-full">
 		<form
 			hx-post="/labels/new"
@@ -108,7 +108,7 @@ templ labelDetailsView(label model.SimpleLabel) {
 	</div>
 }
 
-templ labelEditForm(label *model.SimpleLabel) {
+templ labelEditForm(label *label.SimpleLabel) {
 	<div id="file-title" class="w-full">
 		<form
 			hx-post="/labels/new"
@@ -149,10 +149,10 @@ templ newYearLabels() {
 	</form>
 }
 
-templ labelCheckBoxen(labels []*model.SimpleLabel) {
+templ labelCheckBoxen(labels []*label.SimpleLabel) {
 	<div class="flex flex-wrap gap-2">
 		for _, label := range labels {
-			<div class="btn btn-primary btn-sm" title={label.Description}>
+			<div class="btn btn-primary btn-sm" title={ label.Description }>
 				{ label.Name }
 				<input
 					type="checkbox"

@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
+	"github.com/boundedinfinity/statementer/label"
 	"github.com/boundedinfinity/statementer/model"
 	"github.com/sirupsen/logrus"
 )
@@ -14,7 +15,7 @@ import (
 func New(logger *logrus.Logger) *Runtime {
 	return &Runtime{
 		logger: logger,
-		Labels: model.NewLabelManager(),
+		Labels: label.NewLabelManager(),
 		debug:  true,
 	}
 }
@@ -22,7 +23,7 @@ func New(logger *logrus.Logger) *Runtime {
 type Runtime struct {
 	Config model.Config
 	State  model.StateV1
-	Labels *model.LabelManager
+	Labels *label.LabelManager
 	logger *logrus.Logger
 	debug  bool
 }
