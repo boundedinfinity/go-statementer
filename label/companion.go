@@ -10,7 +10,7 @@ var Labels = labels{}
 
 type labels struct{}
 
-func (this labels) M2P(labels ...*SimpleLabel) []SimpleLabelPersistenceModelV2 {
+func (this labels) M2P(labels ...*LabelViewModel) []SimpleLabelPersistenceModelV2 {
 	var persists []SimpleLabelPersistenceModelV2
 
 	for _, label := range labels {
@@ -30,18 +30,18 @@ func (this labels) M2P(labels ...*SimpleLabel) []SimpleLabelPersistenceModelV2 {
 	return persists
 }
 
-func (this labels) P2M(persists ...SimpleLabelPersistenceModelV2) []*SimpleLabel {
-	var labels []*SimpleLabel
+func (this labels) P2M(persists ...SimpleLabelPersistenceModelV2) []*LabelViewModel {
+	var labels []*LabelViewModel
 
 	for _, persist := range persists {
-		label := SimpleLabel{
+		label := LabelViewModel{
 			Id:          persist.Id,
 			Name:        persist.Name,
 			Description: persist.Description,
 		}
 
 		if !util.Ids.IsZero(persist.Parent) {
-			label.Parent = &SimpleLabel{Id: persist.Parent}
+			label.Parent = &LabelViewModel{Id: persist.Parent}
 		}
 
 		labels = append(labels, &label)

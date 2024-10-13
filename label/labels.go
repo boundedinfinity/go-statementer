@@ -11,18 +11,19 @@ import (
 // Simple Label
 // =====================================================================================
 
-type SimpleLabel struct {
-	Parent      *SimpleLabel
-	Children    []*SimpleLabel
+type LabelViewModel struct {
+	Parent      *LabelViewModel
+	Children    []*LabelViewModel
 	Id          uuid.UUID
 	Name        string
 	Description string
 	Count       int
 	Checked     bool
 	Selected    bool
+	Expanded    bool
 }
 
-func (this SimpleLabel) Validate() error {
+func (this LabelViewModel) Validate() error {
 	if len(this.Name) < 2 {
 		return &ErrLabelValidationDetails{
 			message: "label.Name must be greater than 2 characters",
@@ -65,7 +66,7 @@ var ErrLabelValidation = errors.New("label validation error")
 
 type ErrLabelValidationDetails struct {
 	message string
-	label   SimpleLabel
+	label   LabelViewModel
 }
 
 func (this ErrLabelValidationDetails) Error() string {

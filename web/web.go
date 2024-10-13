@@ -30,6 +30,10 @@ func (this *Web) Listen() error {
 	return this.fiber.Listen(":3000")
 }
 
+func (this *Web) Shutdown() error {
+	return this.fiber.Shutdown()
+}
+
 var (
 	_PREFIX_PROCESSED_DIR = "/processed-dir"
 	_PREFIX_SOURCE_DIR    = "/source-dir"
@@ -80,10 +84,6 @@ func (this *Web) initLabelRoutes() error {
 		return nil
 	})
 
-	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
-		return Render(c, labelList(this.runtime.Labels.List()))
-	})
-
 	this.fiber.Post("/labels/year", func(c *fiber.Ctx) error {
 		if err := this.runtime.Labels.GenerateYearStr(c.FormValue("year")); err != nil {
 			if err = this.runtime.SaveState(); err != nil {
@@ -96,18 +96,30 @@ func (this *Web) initLabelRoutes() error {
 		return Render(c, newYearLabels())
 	})
 
-	this.fiber.Get("/labels/button", func(c *fiber.Ctx) error {
-		return Render(c, labelFormButton())
+	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
+		return Render(c, labelList(this.runtime.Labels.List()))
+	})
+
+	this.fiber.Get("/labels/taxonomy", func(c *fiber.Ctx) error {
+		return Render(c, labelList(this.runtime.Labels.Taxonomy()))
 	})
 
 	this.fiber.Get("/labels/new", func(c *fiber.Ctx) error {
+		return Render(c, labelNewButton())
+	})
+
+	this.fiber.Patch("/labels/new", func(c *fiber.Ctx) error {
 		return Render(c, labelNewForm())
 	})
 
 	this.fiber.Post("/labels/new", func(c *fiber.Ctx) error {
 		name := c.FormValue("name")
 		desc := c.FormValue("description")
-		label := label.SimpleLabel{Name: name, Description: desc}
+		label := label.LabelViewModel{Name: name, Description: desc}
+
+		if err := label.Validate(); err != nil {
+			return Render(c, labelNewButton())
+		}
 
 		if err := this.runtime.Labels.Add(&label); err != nil {
 			log.Println(err.Error())
@@ -118,7 +130,7 @@ func (this *Web) initLabelRoutes() error {
 		}
 
 		this.setTrigger(c, "label-updated")
-		return Render(c, labelFormButton())
+		return Render(c, labelNewButton())
 	})
 
 	return nil
@@ -193,7 +205,7 @@ func (this *Web) initFileRoutes() error {
 		id := c.Params("id")
 		labelIds := this.formValues(c, "label")
 		files := this.runtime.State.Files.ById(id)
-		labels := []*label.SimpleLabel{}
+		labels := []*label.LabelViewModel{}
 
 		for _, labelId := range labelIds {
 			if label, ok := this.runtime.Labels.ByIdStr(labelId); ok {
@@ -214,13 +226,13 @@ func (this *Web) initFileRoutes() error {
 	return nil
 }
 
-func (this *Web) labelSetChecked(all, file []*label.SimpleLabel) []*label.SimpleLabel {
-	copies := slicer.Map(func(_ int, label *label.SimpleLabel) *label.SimpleLabel {
+func (this *Web) labelSetChecked(all, file []*label.LabelViewModel) []*label.LabelViewModel {
+	copies := slicer.Map(func(_ int, label *label.LabelViewModel) *label.LabelViewModel {
 		copy := this.runtime.Labels.Copy(*label)
 		return &copy
 	}, all...)
 
-	group := map[uuid.UUID]*label.SimpleLabel{}
+	group := map[uuid.UUID]*label.LabelViewModel{}
 
 	for _, label := range copies {
 		group[label.Id] = label

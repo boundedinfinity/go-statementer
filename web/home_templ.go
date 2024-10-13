@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/boundedinfinity/statementer/model"
 
-func themeButton() templ.Component {
+func home(config model.Config) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,99 +31,31 @@ func themeButton() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<label class=\"swap swap-rotate\"><!-- this hidden checkbox controls the state --><input type=\"checkbox\" class=\"theme-controller\" value=\"synthwave\"><!-- sun icon --><svg class=\"swap-off h-10 w-10 fill-current\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z\"></path></svg><!-- moon icon --><svg class=\"swap-on h-10 w-10 fill-current\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z\"></path></svg></label>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\" data-theme=\"dim\"><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta name=\"description\" content=\"Bounded Infinity Statement Management System\"><meta name=\"google\" content=\"notranslate\"><meta name=\"htmx-config\" content=\"{&#34;globalViewTransitions&#34;:&#34;true&#34;}\"><link rel=\"shortcut icon\" href=\"/img/gopher-svgrepo-com.svg\" type=\"image/svg+xml\"><link href=\"/css/daisyui.min.css\" rel=\"stylesheet\"><link href=\"/css/tailwind.out.css\" rel=\"stylesheet\" type=\"text/css\"><link href=\"/css/app.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"/js/tailwind.min.js\"></script><script src=\"/js/htmx.min.js\"></script><title>Bounded Infinity : Statement Management System</title></head><body hx-boost=\"true\"><div class=\"parent\"><header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		return templ_7745c5c3_Err
-	})
-}
-
-func home(config model.Config) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\" data-theme=\"dim\"><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta name=\"description\" content=\"Bounded Infinity Statement Management System\"><meta name=\"google\" content=\"notranslate\"><meta name=\"htmx-config\" content=\"{&#34;globalViewTransitions&#34;:&#34;true&#34;}\"><link rel=\"shortcut icon\" href=\"/img/gopher-svgrepo-com.svg\" type=\"image/svg+xml\"><link href=\"/css/daisyui.min.css\" rel=\"stylesheet\"><link href=\"/css/tailwind.out.css\" rel=\"stylesheet\" type=\"text/css\"><link href=\"/css/app.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"/js/tailwind.min.js\"></script><script src=\"/js/htmx.min.js\"></script><title>Bounded Infinity : Statement Management System</title></head><body hx-boost=\"true\"><div class=\"min-h-screen flex flex-col h-screen gap-2 min-w-full p-2\"><header hx-get=\"/labels/all\" hx-trigger=\"load,label-updated from:#generate-year\" hx-target=\"#labels\" class=\"p-2 mt-2 border-2 border-r-2 border-slate-600\"><div id=\"labels\">Labels...</div><div>")
+		templ_7745c5c3_Err = generalSettings(config).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = labelFormButton().Render(ctx, templ_7745c5c3_Buffer)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</header><nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></header><div class=\"flex-1 flex flex-row overflow-y-hidden gap-2\"><nav class=\"w-2/12 overflow-y-auto flex flex-col flex-wrap content-start gap-2 p-2\">")
+		templ_7745c5c3_Err = labelSection().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = themeButton().Render(ctx, templ_7745c5c3_Buffer)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</nav><main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div>Config File:</div><div class=\"ml-4\"><button hx-get=\"/open/config-file\" hx-target=\"#stdout\" class=\"btn btn-primary btn-outline btn-sm\">")
+		templ_7745c5c3_Err = fileControls().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(config.ConfigPath)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/home.templ`, Line: 80, Col: 27}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div><div>Repository Dir:</div><div class=\"ml-4\"><button hx-get=\"/open/repository-dir\" hx-target=\"#stdout\" class=\"btn btn-primary btn-outline btn-sm\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(config.RepositoryDir)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/home.templ`, Line: 92, Col: 30}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div><div>Source Dir:</div><div class=\"ml-4\"><button hx-get=\"/open/source-dir\" hx-target=\"#stdout\" class=\"btn btn-primary btn-outline btn-sm\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(config.SourceDir)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/home.templ`, Line: 104, Col: 26}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div><hr><button hx-get=\"/files/list\" hx-target=\"#results\" class=\"btn btn-primary btn-outline btn-sm\">All Files</button> <button hx-get=\"/files/duplicates\" hx-target=\"#results\" class=\"btn btn-primary btn-outline btn-sm\">Duplicate Files</button>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = newYearLabels().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</nav><main class=\"overflow-y-auto border w-4/12\" hx-get=\"/files/list\" hx-trigger=\"load,file-updated from:#file-labels,label-selected from:#labels\" hx-target=\"#results\"><div id=\"results\"></div></main><aside class=\"w-6/12 h-[1600px]\"><div id=\"details\" class=\"h-full p-2 border-2 border-r-2 border-slate-600\"></div></aside></div><!-- end main container --><footer class=\"bg-gray-100\"><div id=\"stdout\" class=\"mt-2 p-2 border-2 border-r-2 border-slate-600\">This is a test...</div></footer></div></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><aside><div id=\"details\">Details go here</div></aside><footer><div id=\"stdout\" class=\"flex justify-center\">This is the footer</div></footer></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

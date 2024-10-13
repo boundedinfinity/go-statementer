@@ -15,16 +15,16 @@ func (this *LabelManager) GenerateYearStr(year string) error {
 }
 
 func (this *LabelManager) GenerateYear(year int) error {
-	var labels []*SimpleLabel
+	var labels []*LabelViewModel
 
-	yLabel := &SimpleLabel{
+	yLabel := &LabelViewModel{
 		Name: fmt.Sprintf("%04d", year),
 	}
 
 	labels = append(labels, yLabel)
 
 	for month := time.January; month <= time.December; month++ {
-		labels = append(labels, &SimpleLabel{
+		labels = append(labels, &LabelViewModel{
 			Name:        fmt.Sprintf("%04d.%02d", year, month),
 			Description: fmt.Sprintf("%s %d", month.String(), year),
 			Parent:      yLabel,

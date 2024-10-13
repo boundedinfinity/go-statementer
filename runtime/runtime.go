@@ -2,6 +2,7 @@
 package runtime
 
 import (
+	"errors"
 	"log"
 	"os/exec"
 	"runtime"
@@ -71,4 +72,11 @@ func (this *Runtime) osOpen(path string) (string, error) {
 	}
 
 	return string(bs), err
+}
+
+func (this *Runtime) Shutdown() error {
+	log.Println("shutdown: begin")
+	defer log.Println("shutdown: end")
+	saveStateErr := this.SaveState()
+	return errors.Join(saveStateErr)
 }

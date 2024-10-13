@@ -12,19 +12,19 @@ import (
 
 func NewFileDescriptor() *FileDescriptor {
 	return &FileDescriptor{
-		Labels: []*label.SimpleLabel{},
+		Labels: []*label.LabelViewModel{},
 	}
 }
 
 type FileDescriptor struct {
-	Id          uuid.UUID            `json:"id" yaml:"id"`
-	Title       string               `json:"title" yaml:"title"`
-	SourcePaths []string             `json:"source-path" yaml:"source-path"`
-	RepoPath    string               `json:"repo-path" yaml:"repo-path"`
-	Size        Size                 `json:"size" yaml:"size"`
-	Extention   string               `json:"extention" yaml:"extention"`
-	Labels      []*label.SimpleLabel `json:"labels" yaml:"labels"`
-	Hash        string               `json:"hash" yaml:"hash"`
+	Id          uuid.UUID               `json:"id" yaml:"id"`
+	Title       string                  `json:"title" yaml:"title"`
+	SourcePaths []string                `json:"source-path" yaml:"source-path"`
+	RepoPath    string                  `json:"repo-path" yaml:"repo-path"`
+	Size        Size                    `json:"size" yaml:"size"`
+	Extention   string                  `json:"extention" yaml:"extention"`
+	Labels      []*label.LabelViewModel `json:"labels" yaml:"labels"`
+	Hash        string                  `json:"hash" yaml:"hash"`
 }
 
 func (this *FileDescriptor) Merge(that *FileDescriptor) error {

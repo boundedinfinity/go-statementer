@@ -23,16 +23,16 @@ func (this *LabelManager) ResolveInit() error {
 	return nil
 }
 
-func (this *LabelManager) ResolveUp(id uuid.UUID) ([]*SimpleLabel, bool) {
+func (this *LabelManager) ResolveUp(id uuid.UUID) ([]*LabelViewModel, bool) {
 	label, _ := this.ById(id)
 	labels := this.resolveUp(label)
 	return labels, len(labels) > 0
 }
 
-func (this *LabelManager) resolveUp(label *SimpleLabel) []*SimpleLabel {
+func (this *LabelManager) resolveUp(label *LabelViewModel) []*LabelViewModel {
 	if label == nil {
-		return []*SimpleLabel{}
+		return []*LabelViewModel{}
 	}
 
-	return append([]*SimpleLabel{label}, this.resolveUp(label.Parent)...)
+	return append([]*LabelViewModel{label}, this.resolveUp(label.Parent)...)
 }

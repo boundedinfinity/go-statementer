@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/pather"
@@ -84,6 +85,9 @@ func (this *Runtime) LoadState() error {
 }
 
 func (this *Runtime) SaveState() error {
+	log.Println("save state: begin")
+	defer log.Println("save state: end")
+
 	if _, err := pather.Dirs.EnsureErr(this.Config.RepositoryDir); err != nil {
 		return err
 	}

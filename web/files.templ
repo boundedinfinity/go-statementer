@@ -5,6 +5,18 @@ import (
 	"github.com/boundedinfinity/statementer/model"
 )
 
+templ fileControls() {
+	<div
+		id="results"
+		hx-trigger="load,file-updated from:#file-labels,label-selected from:#labels"
+		hx-get="/files/list"
+		hx-target="this"
+		hx-swap="outerHTML"
+	>
+		Loading...
+	</div>
+}
+
 templ filesDetails(file *model.FileDescriptor) {
 	<div
 		class="card bg-base-100 w-full shadow-xl h-[1600px]"
@@ -169,7 +181,7 @@ templ fileLabelView(file *model.FileDescriptor) {
 	</div>
 }
 
-templ fileLabelEdit(file *model.FileDescriptor, labels []*label.SimpleLabel) {
+templ fileLabelEdit(file *model.FileDescriptor, labels []*label.LabelViewModel) {
 	<div id="file-labels">
 		@labelList(file.Labels)
 		<form

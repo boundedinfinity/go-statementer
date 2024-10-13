@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/boundedinfinity/statementer/web"
@@ -41,6 +45,19 @@ func main() {
 		handleError(err)
 		return
 	}
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigCh
+		log.Printf("received %s", sig.String())
+		err := errors.Join(w.Shutdown(), rt.Shutdown())
+
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
 
 	logger.Fatal(w.Listen())
 }

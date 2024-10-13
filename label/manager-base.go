@@ -14,18 +14,18 @@ import (
 
 func NewLabelManager() *LabelManager {
 	return &LabelManager{
-		labelList: []*SimpleLabel{},
-		labelMap:  make(map[uuid.UUID]*SimpleLabel),
+		labelList: []*LabelViewModel{},
+		labelMap:  make(map[uuid.UUID]*LabelViewModel),
 	}
 }
 
 type LabelManager struct {
-	labelList []*SimpleLabel
-	labelMap  map[uuid.UUID]*SimpleLabel
+	labelList []*LabelViewModel
+	labelMap  map[uuid.UUID]*LabelViewModel
 	Selected  []uuid.UUID
 }
 
-func (this *LabelManager) AddSelected(id uuid.UUID) (*SimpleLabel, bool) {
+func (this *LabelManager) AddSelected(id uuid.UUID) (*LabelViewModel, bool) {
 	if label, ok := this.ById(id); ok {
 		this.Selected = append(this.Selected, id)
 		label.Checked = true
@@ -35,7 +35,7 @@ func (this *LabelManager) AddSelected(id uuid.UUID) (*SimpleLabel, bool) {
 	return nil, false
 }
 
-func (this *LabelManager) RemoveSelected(id uuid.UUID) (*SimpleLabel, bool) {
+func (this *LabelManager) RemoveSelected(id uuid.UUID) (*LabelViewModel, bool) {
 	if label, ok := this.ById(id); ok {
 		label.Selected = false
 
@@ -49,11 +49,11 @@ func (this *LabelManager) RemoveSelected(id uuid.UUID) (*SimpleLabel, bool) {
 }
 
 func (this *LabelManager) Reset() {
-	this.labelList = []*SimpleLabel{}
+	this.labelList = []*LabelViewModel{}
 }
 
-func (this *LabelManager) ResolveDown(id uuid.UUID) ([]*SimpleLabel, bool) {
-	var labels []*SimpleLabel
+func (this *LabelManager) ResolveDown(id uuid.UUID) ([]*LabelViewModel, bool) {
+	var labels []*LabelViewModel
 	current := id
 
 	for {
@@ -73,21 +73,21 @@ func (this *LabelManager) ResolveDown(id uuid.UUID) ([]*SimpleLabel, bool) {
 	return labels, len(labels) > 0
 }
 
-func (this *LabelManager) Add(labels ...*SimpleLabel) error {
+func (this *LabelManager) Add(labels ...*LabelViewModel) error {
 	for _, label := range labels {
 		if err := this.add(label); err != nil {
 			return err
 		}
 	}
 
-	this.labelList = slicer.SortFn(func(label *SimpleLabel) string {
+	this.labelList = slicer.SortFn(func(label *LabelViewModel) string {
 		return label.Name
 	}, this.labelList...)
 
 	return nil
 }
 
-func (this *LabelManager) add(label *SimpleLabel) error {
+func (this *LabelManager) add(label *LabelViewModel) error {
 	if label == nil {
 		return nil
 	}
@@ -123,7 +123,7 @@ func (this *LabelManager) add(label *SimpleLabel) error {
 	return nil
 }
 
-func (this *LabelManager) Count(labels ...*SimpleLabel) error {
+func (this *LabelManager) Count(labels ...*LabelViewModel) error {
 	for _, label := range labels {
 		if err := this.count(label); err != nil {
 			return err
@@ -133,12 +133,12 @@ func (this *LabelManager) Count(labels ...*SimpleLabel) error {
 	return nil
 }
 
-func (this *LabelManager) count(label *SimpleLabel) error {
+func (this *LabelManager) count(label *LabelViewModel) error {
 	if err := label.Validate(); err != nil {
 		return util.NewGenericErrorWrapper(label).WithErrs(ErrLabelManagerErr, err)
 	}
 
-	var found *SimpleLabel
+	var found *LabelViewModel
 	var ok bool
 
 	if util.Ids.IsZero(label.Id) {
@@ -162,8 +162,8 @@ func (this *LabelManager) count(label *SimpleLabel) error {
 	return nil
 }
 
-func (this LabelManager) Copy(label SimpleLabel) SimpleLabel {
-	return SimpleLabel{
+func (this LabelManager) Copy(label LabelViewModel) LabelViewModel {
+	return LabelViewModel{
 		Id:          label.Id,
 		Name:        label.Name,
 		Description: label.Description,
@@ -173,11 +173,11 @@ func (this LabelManager) Copy(label SimpleLabel) SimpleLabel {
 	}
 }
 
-func (this LabelManager) Ids(labels []*SimpleLabel) []uuid.UUID {
+func (this LabelManager) Ids(labels []*LabelViewModel) []uuid.UUID {
 	return slicer.Map(label2id, labels...)
 }
 
-func (this LabelManager) IsSame(labels []*SimpleLabel, selecteds []uuid.UUID) bool {
+func (this LabelManager) IsSame(labels []*LabelViewModel, selecteds []uuid.UUID) bool {
 	counts := make(map[uuid.UUID]bool, len(labels))
 
 	for _, label := range labels {

@@ -1,3 +1,59 @@
-.btn-1 {
-    @apply btn btn-secondary btn-outline;
+.parent {
+    height: 100vh;
+    display: grid;
+    grid-template-areas:
+        'header header  header'
+        'nav    content side'
+        'footer footer  footer';
+}
+
+header,
+footer,
+nav,
+main,
+aside {
+    padding: 10px;
+}
+
+nav,
+main,
+aside {
+    overflow-y: scroll;
+}
+
+header {
+    grid-area: header;
+    /* background-color: red; */
+}
+
+nav {
+    grid-area: nav;
+    /* background-color: green; */
+}
+
+main {
+    grid-area: content;
+    /* background-color: plum; */
+}
+
+aside {
+    grid-area: side;
+}
+
+footer {
+    grid-area: footer;
+}
+
+@media (max-width: 768px) {
+    .parent {
+        grid: repeat(5, 1fr) / 1fr;
+    }
+
+    header,
+    footer,
+    nav,
+    main,
+    aside {
+        grid-column: 1 / 2;
+    }
 }

@@ -2,7 +2,38 @@ package web
 
 import "github.com/boundedinfinity/statementer/label"
 
-templ labelList(labels []*label.SimpleLabel) {
+templ labelSection() {
+	<div class="flex items-center">
+		<button
+			hx-get="/labels/all"
+			hx-target="#labels"
+			class="btn btn-primary btn-outline btn-xs m-4"
+			id="labels-all"
+		>
+			All
+		</button>
+		<button
+			hx-get="/labels/taxonomy"
+			hx-target="#labels"
+			class="btn btn-primary btn-outline btn-xs m-4"
+			id="labels-taxonomy"
+		>
+			Taxonomy
+		</button>
+		@labelNewButton()
+		@newYearLabels()
+	</div>
+	<div
+		id="labels"
+		hx-trigger="load"
+		hx-get="/labels/all"
+		hx-target="this"
+	>
+		Labels...
+	</div>
+}
+
+templ labelList(labels []*label.LabelViewModel) {
 	<div class="flex flex-wrap gap-2">
 		for _, label := range labels {
 			@labelView(label)
@@ -10,7 +41,7 @@ templ labelList(labels []*label.SimpleLabel) {
 	</div>
 }
 
-templ labelView(label *label.SimpleLabel) {
+templ labelView(label *label.LabelViewModel) {
 	if label.Selected {
 		<button
 			hx-delete={ attrPath("/labels/select", label.Id.String()) }
@@ -36,9 +67,9 @@ templ labelView(label *label.SimpleLabel) {
 	}
 }
 
-templ labelFormButton() {
+templ labelNewButton() {
 	<button
-		hx-get="/labels/new"
+		hx-patch="/labels/new"
 		hx-target="this"
 		hx-swap="outerHTML"
 		class="btn btn-primary btn-outline btn-xs m-4"
@@ -70,16 +101,15 @@ templ labelNewForm() {
 		<button type="submit" class="btn btn-primary btn-outline btn-xs">Save</button>
 		<button
 			class="btn btn-primary btn-outline btn-xs"
-			hx-get="/labels/button"
+			hx-get="/labels/new"
 			hx-target="#label-new-form"
-			hx-swap="outerHTML"
 		>
 			Cancel
 		</button>
 	</form>
 }
 
-templ labelDetailsView(label label.SimpleLabel) {
+templ labelDetailsView(label label.LabelViewModel) {
 	<div id="file-title" class="w-full">
 		<form
 			hx-post="/labels/new"
@@ -108,7 +138,7 @@ templ labelDetailsView(label label.SimpleLabel) {
 	</div>
 }
 
-templ labelEditForm(label *label.SimpleLabel) {
+templ labelEditForm(label *label.LabelViewModel) {
 	<div id="file-title" class="w-full">
 		<form
 			hx-post="/labels/new"
@@ -137,10 +167,10 @@ templ labelEditForm(label *label.SimpleLabel) {
 }
 
 templ newYearLabels() {
-	<form id="generate-year" class="flex btn btn-primary btn-outline btn-sm">
+	<form id="label-generate-year" class="flex btn btn-primary btn-outline btn-sm">
 		<button
 			hx-post="/labels/year"
-			hx-target="#generate-year"
+			hx-target="#label-generate-year"
 			hx-swap="outerHTML"
 		>
 			Generate Year Labels
@@ -149,7 +179,7 @@ templ newYearLabels() {
 	</form>
 }
 
-templ labelCheckBoxen(labels []*label.SimpleLabel) {
+templ labelCheckBoxen(labels []*label.LabelViewModel) {
 	<div class="flex flex-wrap gap-2">
 		for _, label := range labels {
 			<div class="btn btn-primary btn-sm" title={ label.Description }>
