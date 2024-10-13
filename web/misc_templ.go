@@ -79,15 +79,7 @@ func generalSettings(config model.Config) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div><hr><button hx-get=\"/files/list\" hx-target=\"#results\" class=\"btn btn-primary btn-outline btn-sm\">All Files</button> <button hx-get=\"/files/duplicates\" hx-target=\"#results\" class=\"btn btn-primary btn-outline btn-sm\">Duplicate Files</button>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = newYearLabels().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -5,13 +5,28 @@ import (
 	"github.com/boundedinfinity/statementer/model"
 )
 
-templ fileControls() {
+templ filesSection() {
+	<div class="flex items-center flex-wrap mb-9 gap-4">
+		<button
+			hx-get="/files/list"
+			hx-target="#file-list"
+			class="btn btn-primary btn-outline btn-sm"
+		>
+			All Files
+		</button>
+		<button
+			hx-get="/files/duplicates"
+			hx-target="#file-list"
+			class="btn btn-primary btn-outline btn-sm"
+		>
+			Duplicate Files
+		</button>
+	</div>
 	<div
-		id="results"
+		id="file-list"
 		hx-trigger="load,file-updated from:#file-labels,label-selected from:#labels"
 		hx-get="/files/list"
 		hx-target="this"
-		hx-swap="outerHTML"
 	>
 		Loading...
 	</div>
@@ -237,7 +252,7 @@ templ filesDuplicates(fileMap map[string][]*model.FileDescriptor) {
 						<td>
 							<button
 								hx-get="/files/duplicates"
-								hx-target="#results"
+								hx-target="#file-list"
 								class="btn btn-primary btn-outline"
 							>
 								Merge

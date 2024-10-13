@@ -5,6 +5,7 @@
         'header header  header'
         'nav    content side'
         'footer footer  footer';
+    grid-template-columns: 1fr 2fr 2fr;
 }
 
 header,
@@ -44,7 +45,7 @@ footer {
     grid-area: footer;
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
     .parent {
         grid: repeat(5, 1fr) / 1fr;
     }
@@ -56,4 +57,4 @@ footer {
     aside {
         grid-column: 1 / 2;
     }
-}
+} */

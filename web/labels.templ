@@ -3,7 +3,7 @@ package web
 import "github.com/boundedinfinity/statementer/label"
 
 templ labelSection() {
-	<div class="flex items-center">
+	<div class="flex items-center flex-wrap mb-9 gap-4">
 		<button
 			hx-get="/labels/all"
 			hx-target="#labels"

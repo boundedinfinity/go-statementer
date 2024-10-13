@@ -31,7 +31,7 @@ func labelSection() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex items-center\"><button hx-get=\"/labels/all\" hx-target=\"#labels\" class=\"btn btn-primary btn-outline btn-xs m-4\" id=\"labels-all\">All</button> <button hx-get=\"/labels/taxonomy\" hx-target=\"#labels\" class=\"btn btn-primary btn-outline btn-xs m-4\" id=\"labels-taxonomy\">Taxonomy</button>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex items-center flex-wrap mb-9 gap-4\"><button hx-get=\"/labels/all\" hx-target=\"#labels\" class=\"btn btn-primary btn-outline btn-xs m-4\" id=\"labels-all\">All</button> <button hx-get=\"/labels/taxonomy\" hx-target=\"#labels\" class=\"btn btn-primary btn-outline btn-xs m-4\" id=\"labels-taxonomy\">Taxonomy</button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

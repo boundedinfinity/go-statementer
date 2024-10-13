@@ -42,25 +42,8 @@ templ generalSettings(config model.Config) {
 				{ config.SourceDir }
 			</button>
 		</div>
-		<hr/>
-		<button
-			hx-get="/files/list"
-			hx-target="#results"
-			class="btn btn-primary btn-outline btn-sm"
-		>
-			All Files
-		</button>
-		<button
-			hx-get="/files/duplicates"
-			hx-target="#results"
-			class="btn btn-primary btn-outline btn-sm"
-		>
-			Duplicate Files
-		</button>
-		@newYearLabels()
 	</div>
 }
-
 
 templ themeButton() {
 	<label class="swap swap-rotate">
