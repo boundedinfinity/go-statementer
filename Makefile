@@ -25,6 +25,7 @@ dev:
 	air
 
 test: generate
+	go mod tidy
 	go test -v ./...
 
 commit: test
