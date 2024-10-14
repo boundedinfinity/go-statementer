@@ -20,6 +20,12 @@ func (this *LabelManager) ResolveInit() error {
 		label.Children = slicer.UniqFn(label2id, label.Children...)
 	}
 
+	for _, label := range this.labelList {
+		label.Children = slicer.SortFn(func(label *LabelViewModel) string {
+			return label.Name
+		}, label.Children...)
+	}
+
 	return nil
 }
 

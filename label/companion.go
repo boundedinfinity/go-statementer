@@ -20,8 +20,8 @@ func (this labels) M2P(labels ...*LabelViewModel) []SimpleLabelPersistenceModelV
 			Description: label.Description,
 		}
 
-		if label.Parent != nil {
-			persist.Parent = label.Id
+		if label.Parent != nil && !util.Ids.IsZero(label.Parent.Id) {
+			persist.Parent = label.Parent.Id
 		}
 
 		persists = append(persists, persist)

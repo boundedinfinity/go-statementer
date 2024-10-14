@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type FilterFunc func(int, *LabelViewModel) bool
+type LabelFilterFunc func(int, *LabelViewModel) bool
 
-func (this *LabelManager) List(filters ...FilterFunc) []*LabelViewModel {
+func (this *LabelManager) List(filters ...LabelFilterFunc) []*LabelViewModel {
 	results := this.labelList
 
 	for _, filter := range filters {
@@ -25,8 +25,8 @@ func (this *LabelManager) List(filters ...FilterFunc) []*LabelViewModel {
 	return results
 }
 
-func (this *LabelManager) Taxonomy(filters ...FilterFunc) []*LabelViewModel {
-	return this.List(append([]FilterFunc{TaxonomyFilter}, filters...)...)
+func (this *LabelManager) Taxonomy(filters ...LabelFilterFunc) []*LabelViewModel {
+	return this.List(append([]LabelFilterFunc{TaxonomyFilter}, filters...)...)
 }
 
 func (this *LabelManager) Select(selected bool) {
@@ -53,7 +53,7 @@ func (this *LabelManager) ByIdStr(id string) (*LabelViewModel, bool) {
 }
 
 func (this *LabelManager) ById(id uuid.UUID) (*LabelViewModel, bool) {
-	label, ok := this.labelMap[id]
+	label, ok := slicer.FindFn(LabelIdFilter(id), this.labelList...)
 	return label, ok
 }
 
@@ -78,13 +78,13 @@ var (
 		return stringer.Contains(label.Description, text)
 	}
 
-	// idFilter = func(id uuid.UUID) func(_ int, label *SimpleLabel) bool {
-	// 	str1 := id.String()
-	// 	return func(_ int, label *SimpleLabel) bool {
-	// 		str2 := label.Id.String()
-	// 		return str1 == str2
-	// 	}
-	// }
+	LabelIdFilter = func(id uuid.UUID) func(_ int, label *LabelViewModel) bool {
+		str1 := id.String()
+		return func(_ int, label *LabelViewModel) bool {
+			str2 := label.Id.String()
+			return str1 == str2
+		}
+	}
 
 	TaxonomyFilter = func(_ int, label *LabelViewModel) bool { return label.Parent == nil }
 

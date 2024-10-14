@@ -7,6 +7,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
 	"github.com/boundedinfinity/statementer/label"
+	"github.com/boundedinfinity/statementer/model"
 	"github.com/boundedinfinity/statementer/runtime"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -101,7 +102,7 @@ func (this *Web) initLabelRoutes() error {
 	})
 
 	this.fiber.Get("/labels/taxonomy", func(c *fiber.Ctx) error {
-		return Render(c, labelList(this.runtime.Labels.Taxonomy()))
+		return Render(c, labelTaxonomy(this.runtime.Labels.Taxonomy()))
 	})
 
 	this.fiber.Get("/labels/new", func(c *fiber.Ctx) error {
@@ -162,20 +163,20 @@ func (this *Web) initFileRoutes() error {
 
 	this.fiber.Get("/files/title/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		return Render(c, fileViewTitle(files[0]))
 	})
 
 	this.fiber.Patch("/files/title/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		return Render(c, fileEditTitle(files[0]))
 	})
 
 	this.fiber.Post("/files/title/:id", func(c *fiber.Ctx) error {
 		id := c.FormValue("id")
 		title := c.FormValue("title")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		files[0].Title = title
 
 		if err := this.runtime.SaveState(); err != nil {
@@ -188,13 +189,13 @@ func (this *Web) initFileRoutes() error {
 
 	this.fiber.Get("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		return Render(c, fileLabelView(files[0]))
 	})
 
 	this.fiber.Patch("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		return Render(c, fileLabelEdit(
 			files[0],
 			this.labelSetChecked(this.runtime.State.Labels, files[0].Labels),
@@ -204,7 +205,7 @@ func (this *Web) initFileRoutes() error {
 	this.fiber.Post("/files/label/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		labelIds := this.formValues(c, "label")
-		files := this.runtime.State.Files.ById(id)
+		files := this.runtime.State.Files.Filter(model.FileIdFilter(id))
 		labels := []*label.LabelViewModel{}
 
 		for _, labelId := range labelIds {

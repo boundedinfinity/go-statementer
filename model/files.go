@@ -54,26 +54,40 @@ func (this *FileDescriptor) Merge(that *FileDescriptor) error {
 	return nil
 }
 
-func fileIdFilter(file *FileDescriptor, id string) bool {
-	return file.Id.String() == id
+func FileIdFilter(id string) FileFilterFunc {
+	return func(i int, file *FileDescriptor) bool { return file.Id.String() == id }
 }
 
-func fileTitleFilter(file *FileDescriptor, text string) bool {
-	return stringer.Contains(file.Title, text)
+func FileTitleFilter(term string) FileFilterFunc {
+	return func(i int, file *FileDescriptor) bool { return stringer.Contains(file.Title, term) }
 }
 
-func fileSourcePathFilter(file *FileDescriptor, text string) bool {
-	return slicer.ContainsFn(func(_ int, path string) bool {
-		return stringer.Contains(path, text)
-	}, file.SourcePaths...)
+func FileSourcePathFilter(term string) FileFilterFunc {
+	return func(i int, file *FileDescriptor) bool {
+		return slicer.ContainsFn(func(_ int, path string) bool {
+			return stringer.Contains(path, term)
+		}, file.SourcePaths...)
+	}
 }
 
-func fileExtentionFilter(file *FileDescriptor, text string) bool {
-	return stringer.Contains(file.Extention, text)
+func FileExtentionFilter(term string) FileFilterFunc {
+	return func(i int, file *FileDescriptor) bool { return stringer.Contains(file.Extention, term) }
 }
 
-func fileLabelTermFilter(file *FileDescriptor, text string) bool {
-	return slicer.ContainsFn(label.ContainsFilter(text), file.Labels...)
+func FileLabelTermFilter(term string) FileFilterFunc {
+	return func(i int, file *FileDescriptor) bool {
+		return slicer.ContainsFn(label.ContainsFilter(term), file.Labels...)
+	}
+}
+
+func FileTermFilter(term string) FileFilterFunc {
+	title := FileTitleFilter(term)
+	sourcePath := FileSourcePathFilter(term)
+	ext := FileExtentionFilter(term)
+
+	return func(i int, file *FileDescriptor) bool {
+		return title(i, file) || sourcePath(i, file) || ext(i, file)
+	}
 }
 
 // =====================================================================================
@@ -131,42 +145,16 @@ func (this FileDescriptors) Duplicates() map[string][]*FileDescriptor {
 	return found
 }
 
-func (this FileDescriptors) ById(id string) []*FileDescriptor {
-	return this.filter(id, fileIdFilter)
-}
+type FileFilterFunc func(int, *FileDescriptor) bool
 
-func (this FileDescriptors) ByTerm(text string) []*FileDescriptor {
-	return this.filter(text, fileTitleFilter, fileSourcePathFilter, fileExtentionFilter)
-}
+func (this FileDescriptors) Filter(fns ...FileFilterFunc) []*FileDescriptor {
+	files := this[:]
 
-func (this FileDescriptors) BySourcePath(name string) []*FileDescriptor {
-	return this.filter(name, fileSourcePathFilter)
-}
-
-func (this FileDescriptors) ByTitle(name string) []*FileDescriptor {
-	return this.filter(name, fileTitleFilter)
-}
-
-func (this FileDescriptors) ByExtention(name string) []*FileDescriptor {
-	return this.filter(name, fileExtentionFilter)
-}
-
-func (this FileDescriptors) ByLabel(name string) []*FileDescriptor {
-	return this.filter(name, fileLabelTermFilter)
-}
-
-func (this FileDescriptors) filter(text string, fns ...func(*FileDescriptor, string) bool) []*FileDescriptor {
-	var found []*FileDescriptor
-
-	for _, file := range this {
-		for _, fn := range fns {
-			if fn(file, text) {
-				found = append(found, file)
-			}
-		}
+	for _, fn := range fns {
+		files = slicer.Filter(fn, files...)
 	}
 
-	return found
+	return files
 }
 
 // =====================================================================================

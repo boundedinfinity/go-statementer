@@ -15,14 +15,13 @@ import (
 func NewLabelManager() *LabelManager {
 	return &LabelManager{
 		labelList: []*LabelViewModel{},
-		labelMap:  make(map[uuid.UUID]*LabelViewModel),
 	}
 }
 
 type LabelManager struct {
 	labelList []*LabelViewModel
-	labelMap  map[uuid.UUID]*LabelViewModel
-	Selected  []uuid.UUID
+
+	Selected []uuid.UUID
 }
 
 func (this *LabelManager) AddSelected(id uuid.UUID) (*LabelViewModel, bool) {
@@ -117,7 +116,6 @@ func (this *LabelManager) add(label *LabelViewModel) error {
 		}
 
 		this.labelList = append(this.labelList, label)
-		this.labelMap[label.Id] = label
 	}
 
 	return nil

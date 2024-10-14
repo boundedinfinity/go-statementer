@@ -66,7 +66,7 @@ func (this *Runtime) HashSource(file *model.FileDescriptor) error {
 
 func (this *Runtime) WalkSource() error {
 	err := this.walkSource(func(path string, info fs.FileInfo, err error) error {
-		found := this.State.Files.BySourcePath(path)
+		found := this.State.Files.Filter(model.FileSourcePathFilter(path))
 		var file *model.FileDescriptor
 
 		switch len(found) {
@@ -135,5 +135,5 @@ func (this *Runtime) FilesAllNoLabels() model.FileDescriptors {
 }
 
 func (this *Runtime) FileGet(id string) []*model.FileDescriptor {
-	return this.State.Files.ById(id)
+	return this.State.Files.Filter(model.FileIdFilter(id))
 }
