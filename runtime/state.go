@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/pather"
+	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/statementer/label"
 	"github.com/boundedinfinity/statementer/model"
 )
@@ -15,29 +16,6 @@ func (this *Runtime) LoadState() error {
 	if err != nil {
 		return err
 	}
-
-	// var state1 model.StateV1
-	// data, err := os.ReadFile(this.Config.StatePath)
-	// if err != nil {
-	// 	return err
-	// }
-	// if err := json.Unmarshal(data, &state1); err != nil {
-	// 	return err
-	// }
-
-	// var state2 model.StateV2
-	// state2.Files = model.Files.Model2Persist(this.Labels, state1.Files...)
-	// state2.Labels = model.Labels.M2P(state1.Labels...)
-	// state2.SelectedLabels = state1.SelectedLabels
-
-	// data, err = json.MarshalIndent(state2, "", "    ")
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if err := os.WriteFile(this.Config.StatePath, data, os.FileMode(0644)); err != nil {
-	// 	return err
-	// }
 
 	ok, err := pather.Files.ExistsErr(this.Config.StatePath)
 	if err != nil {
@@ -62,7 +40,7 @@ func (this *Runtime) LoadState() error {
 	}
 
 	for _, id := range state.SelectedLabels {
-		this.Labels.AddSelected(id)
+		this.Labels.Select(true, id.String())
 	}
 
 	for _, label := range this.Config.Labels {
@@ -75,7 +53,7 @@ func (this *Runtime) LoadState() error {
 		return err
 	}
 
-	this.State.Files = model.Files.Persist2Model(this.Labels, state.Files...)
+	this.State.Files = model.Files.P2M(this.Labels, state.Files...)
 
 	for _, file := range this.State.Files {
 		this.Labels.Count(file.Labels...)
@@ -92,11 +70,13 @@ func (this *Runtime) SaveState() error {
 		return err
 	}
 
+	selectedLabels := slicer.Filter(label.SelectedFilter, this.Labels.List()...)
+
 	state := model.StateV2{
 		Version:        "2",
 		Labels:         label.Labels.M2P(this.Labels.List()...),
-		Files:          model.Files.Model2Persist(this.Labels, this.State.Files...),
-		SelectedLabels: this.Labels.Selected,
+		Files:          model.Files.M2P(this.State.Files...),
+		SelectedLabels: slicer.Map(label.IdExtract, selectedLabels...),
 	}
 
 	data, err := json.MarshalIndent(state, "", "    ")

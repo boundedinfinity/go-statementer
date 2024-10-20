@@ -54,41 +54,49 @@ func (this *FileDescriptor) Merge(that *FileDescriptor) error {
 	return nil
 }
 
-func FileIdFilter(id string) FileFilterFunc {
-	return func(i int, file *FileDescriptor) bool { return file.Id.String() == id }
-}
-
-func FileTitleFilter(term string) FileFilterFunc {
-	return func(i int, file *FileDescriptor) bool { return stringer.Contains(file.Title, term) }
-}
-
-func FileSourcePathFilter(term string) FileFilterFunc {
-	return func(i int, file *FileDescriptor) bool {
-		return slicer.ContainsFn(func(_ int, path string) bool {
-			return stringer.Contains(path, term)
-		}, file.SourcePaths...)
+var (
+	FileIdFilter = func(id string) FileFilterFunc {
+		return func(i int, file *FileDescriptor) bool { return file.Id.String() == id }
 	}
-}
 
-func FileExtentionFilter(term string) FileFilterFunc {
-	return func(i int, file *FileDescriptor) bool { return stringer.Contains(file.Extention, term) }
-}
-
-func FileLabelTermFilter(term string) FileFilterFunc {
-	return func(i int, file *FileDescriptor) bool {
-		return slicer.ContainsFn(label.ContainsFilter(term), file.Labels...)
+	FileTitleFilter = func(term string) FileFilterFunc {
+		target := stringer.ToLower(term)
+		return func(i int, file *FileDescriptor) bool { return stringer.Contains(stringer.ToLower(file.Title), target) }
 	}
-}
 
-func FileTermFilter(term string) FileFilterFunc {
-	title := FileTitleFilter(term)
-	sourcePath := FileSourcePathFilter(term)
-	ext := FileExtentionFilter(term)
-
-	return func(i int, file *FileDescriptor) bool {
-		return title(i, file) || sourcePath(i, file) || ext(i, file)
+	FileExtentionFilter = func(term string) FileFilterFunc {
+		target := stringer.ToLower(term)
+		return func(i int, file *FileDescriptor) bool { return stringer.Contains(file.Extention, target) }
 	}
-}
+
+	FileLabelTermFilter = func(term string) FileFilterFunc {
+		return func(i int, file *FileDescriptor) bool {
+			return slicer.ContainsFn(label.ContainsFilter(term), file.Labels...)
+		}
+	}
+
+	FileTermFilter = func(term string) FileFilterFunc {
+		title := FileTitleFilter(term)
+		sourcePath := FileSourcePathFilter(term)
+		ext := FileExtentionFilter(term)
+
+		return func(i int, file *FileDescriptor) bool {
+			return title(i, file) || sourcePath(i, file) || ext(i, file)
+		}
+	}
+
+	FileSourcePathFilter = func(term string) FileFilterFunc {
+		return func(i int, file *FileDescriptor) bool {
+			return slicer.ContainsFn(
+				func(_ int, path string) bool {
+					lcpath := stringer.Lowercase(path)
+					return stringer.Contains(lcpath, term)
+				},
+				file.SourcePaths...,
+			)
+		}
+	}
+)
 
 // =====================================================================================
 // Errors
@@ -180,7 +188,7 @@ var Files = files{}
 
 type files struct{}
 
-func (this files) Model2Persist(lm *label.LabelManager, files ...*FileDescriptor) []FilePersistenceModel {
+func (this files) M2P(files ...*FileDescriptor) []FilePersistenceModel {
 	return slicer.Map(func(_ int, file *FileDescriptor) FilePersistenceModel {
 		return FilePersistenceModel{
 			Id:          file.Id,
@@ -189,17 +197,17 @@ func (this files) Model2Persist(lm *label.LabelManager, files ...*FileDescriptor
 			RepoPath:    file.RepoPath,
 			Size:        file.Size,
 			Extention:   file.Extention,
-			Labels:      lm.Ids(file.Labels),
+			Labels:      slicer.Map(label.IdExtract, file.Labels...),
 			Hash:        file.Hash,
 		}
 	}, files...)
 }
 
-func (this files) Model2Persist1(lm *label.LabelManager, file *FileDescriptor) FilePersistenceModel {
-	return this.Model2Persist(lm, file)[0]
+func (this files) M2P1(lm *label.LabelManager, file *FileDescriptor) FilePersistenceModel {
+	return this.M2P(file)[0]
 }
 
-func (this files) Persist2Model(lm *label.LabelManager, files ...FilePersistenceModel) []*FileDescriptor {
+func (this files) P2M(lm *label.LabelManager, files ...FilePersistenceModel) []*FileDescriptor {
 	var descriptors []*FileDescriptor
 
 	for _, persist := range files {

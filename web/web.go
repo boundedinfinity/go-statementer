@@ -59,27 +59,27 @@ func (this *Web) Init() error {
 }
 
 func (this *Web) initLabelRoutes() error {
-	this.fiber.Get("/labels/select/:id", func(c *fiber.Ctx) error {
-		if id, err := uuid.Parse(c.Params("id")); err != nil {
-			log.Println(err.Error())
-		} else {
-			if label, ok := this.runtime.Labels.AddSelected(id); ok {
-				this.setTrigger(c, "label-selected")
-				return Render(c, labelView(label))
-			}
+	if err := this.initLabelViewRoutes(); err != nil {
+		return err
+	}
+
+	if err := this.initLabelEditRoutes(); err != nil {
+		return err
+	}
+
+	this.fiber.Patch("/labels/select/:id", func(c *fiber.Ctx) error {
+		if label, ok := this.runtime.Labels.Select(true, c.Params("id")); ok {
+			this.setTrigger(c, "label-selected")
+			return Render(c, labelSelectionView(label))
 		}
 
 		return nil
 	})
 
 	this.fiber.Delete("/labels/select/:id", func(c *fiber.Ctx) error {
-		if id, err := uuid.Parse(c.Params("id")); err != nil {
-			log.Println(err.Error())
-		} else {
-			if label, ok := this.runtime.Labels.RemoveSelected(id); ok {
-				this.setTrigger(c, "label-selected")
-				return Render(c, labelView(label))
-			}
+		if label, ok := this.runtime.Labels.Select(false, c.Params("id")); ok {
+			this.setTrigger(c, "label-selected")
+			return Render(c, labelSelectionView(label))
 		}
 
 		return nil
@@ -91,10 +91,15 @@ func (this *Web) initLabelRoutes() error {
 				log.Println(err.Error())
 			} else {
 				this.setTrigger(c, "label-updated")
+				this.runtime.SaveState()
 			}
 		}
 
 		return Render(c, newYearLabels())
+	})
+
+	this.fiber.Get("/details/null", func(c *fiber.Ctx) error {
+		return Render(c, detailsNull())
 	})
 
 	this.fiber.Get("/labels/all", func(c *fiber.Ctx) error {
@@ -110,7 +115,7 @@ func (this *Web) initLabelRoutes() error {
 	})
 
 	this.fiber.Patch("/labels/new", func(c *fiber.Ctx) error {
-		return Render(c, labelNewForm())
+		return Render(c, labelNewForm(this.runtime.Labels.List()))
 	})
 
 	this.fiber.Post("/labels/new", func(c *fiber.Ctx) error {
@@ -131,7 +136,7 @@ func (this *Web) initLabelRoutes() error {
 		}
 
 		this.setTrigger(c, "label-updated")
-		return Render(c, labelNewButton())
+		return nil
 	})
 
 	return nil

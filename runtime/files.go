@@ -12,6 +12,7 @@ import (
 	"github.com/boundedinfinity/go-commoner/idiomatic/extentioner"
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/go-commoner/idiomatic/stringer"
+	"github.com/boundedinfinity/statementer/label"
 	"github.com/boundedinfinity/statementer/model"
 	"github.com/google/uuid"
 )
@@ -107,14 +108,13 @@ func (this *Runtime) FilesDuplicates() map[string][]*model.FileDescriptor {
 }
 
 func (this *Runtime) FilesAllFiltered() model.FileDescriptors {
-	if len(this.Labels.Selected) == 0 {
-		return this.State.Files
-	}
+	selectedLabels := slicer.Filter(label.SelectedFilter, this.Labels.List()...)
+	selectedIds := slicer.Map(label.IdExtract, selectedLabels...)
 
 	var files model.FileDescriptors
 
 	for _, file := range this.State.Files {
-		if this.Labels.IsSame(file.Labels, this.Labels.Selected) {
+		if this.Labels.IsSame(file.Labels, selectedIds) {
 			files = append(files, file)
 		}
 	}

@@ -2,6 +2,7 @@ package label
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/boundedinfinity/go-commoner/idiomatic/slicer"
 	"github.com/boundedinfinity/statementer/util"
@@ -20,56 +21,35 @@ func NewLabelManager() *LabelManager {
 
 type LabelManager struct {
 	labelList []*LabelViewModel
-
-	Selected []uuid.UUID
 }
 
-func (this *LabelManager) AddSelected(id uuid.UUID) (*LabelViewModel, bool) {
-	if label, ok := this.ById(id); ok {
-		this.Selected = append(this.Selected, id)
-		label.Checked = true
-		return label, ok
+func (this *LabelManager) Select(state bool, id string) (*LabelViewModel, bool) {
+	var label *LabelViewModel
+	var found bool
+
+	switch {
+	case id == "":
+		// nothing to do
+	case id == "all":
+		for _, label := range this.labelList {
+			label.Selected = state
+		}
+
+	default:
+		if parsed, err := uuid.Parse(id); err == nil {
+			if label, found = this.ById(parsed); found {
+				label.Selected = state
+			}
+		} else {
+			log.Println(err.Error())
+		}
 	}
 
-	return nil, false
-}
-
-func (this *LabelManager) RemoveSelected(id uuid.UUID) (*LabelViewModel, bool) {
-	if label, ok := this.ById(id); ok {
-		label.Selected = false
-
-		this.Selected = slicer.Filter(func(_ int, current uuid.UUID) bool {
-			return id != current
-		}, this.Selected...)
-
-		return label, ok
-	}
-	return nil, false
+	return label, found
 }
 
 func (this *LabelManager) Reset() {
 	this.labelList = []*LabelViewModel{}
-}
-
-func (this *LabelManager) ResolveDown(id uuid.UUID) ([]*LabelViewModel, bool) {
-	var labels []*LabelViewModel
-	current := id
-
-	for {
-		label, ok := this.ById(current)
-
-		if !ok {
-			break
-		}
-
-		if label.Parent != nil && util.Ids.IsZero(label.Parent.Id) {
-			current = label.Parent.Id
-		} else {
-			break
-		}
-	}
-
-	return labels, len(labels) > 0
 }
 
 func (this *LabelManager) Add(labels ...*LabelViewModel) error {
@@ -162,17 +142,16 @@ func (this *LabelManager) count(label *LabelViewModel) error {
 
 func (this LabelManager) Copy(label LabelViewModel) LabelViewModel {
 	return LabelViewModel{
+		Parent:      label.Parent,
 		Id:          label.Id,
 		Name:        label.Name,
 		Description: label.Description,
+		Children:    label.Children,
 		Count:       label.Count,
 		Checked:     label.Checked,
 		Selected:    label.Selected,
+		Expanded:    label.Expanded,
 	}
-}
-
-func (this LabelManager) Ids(labels []*LabelViewModel) []uuid.UUID {
-	return slicer.Map(label2id, labels...)
 }
 
 func (this LabelManager) IsSame(labels []*LabelViewModel, selecteds []uuid.UUID) bool {

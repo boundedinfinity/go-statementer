@@ -35,7 +35,7 @@ templ home(config model.Config) {
 					@filesSection()
 				</main>
 				<aside>
-					<div id="details">Details go here</div>
+					@detailsNull()
 				</aside>
 				<footer>
 					<div id="stdout" class="flex justify-center">
@@ -45,4 +45,8 @@ templ home(config model.Config) {
 			</div>
 		</body>
 	</html>
+}
+
+templ detailsNull() {
+	<div id="details">Details go here</div>
 }

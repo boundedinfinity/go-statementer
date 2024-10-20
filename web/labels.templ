@@ -21,6 +21,7 @@ templ labelSection() {
 			Taxonomy
 		</button>
 		@labelNewButton()
+		@labelEditButton(LABEL_EDIT_PATH)
 		@newYearLabels()
 	</div>
 	<div
@@ -36,7 +37,7 @@ templ labelSection() {
 templ labelList(labels []*label.LabelViewModel) {
 	<div class="flex flex-wrap gap-2">
 		for _, label := range labels {
-			@labelView(label)
+			@labelSelectionView(label)
 		}
 	</div>
 }
@@ -44,56 +45,75 @@ templ labelList(labels []*label.LabelViewModel) {
 templ labelTaxonomy(labels []*label.LabelViewModel) {
 	<ul class="my-2">
 		for _, label := range labels {
-			<li class="my-1">
-				@labelView(label)
+			<li class="flex gap-2" id={ attrId("label-view", label.Id.String()) }>
+				@labelSelectionView(label)
 				if len(label.Children) > 0 {
-					<div class="ml-12">
-						@labelTaxonomy(label.Children)
-					</div>
+					<button
+						hx-get={ attrPath(LABEL_EXPAND_PATH, label.Id.String()) }
+						hx-target={ attrId("#label-view", label.Id.String()) }
+						hx-swap="outerHTML"
+					>
+						<img
+							if label.Expanded {
+								src="/img/minus-square.svg"
+							} else {
+								src="/img/plus-square.svg"
+							}
+							class="fill-white"
+						/>
+					</button>
+				}
+				if label.Expanded {
+					@labelTaxonomy(label.Children)
 				}
 			</li>
 		}
 	</ul>
 }
 
-templ labelView(label *label.LabelViewModel) {
-	if label.Selected {
-		<button
-			hx-delete={ attrPath("/labels/select", label.Id.String()) }
-			hx-target="this"
-			hx-swap="outerHTML"
+templ labelSelectionView(label *label.LabelViewModel) {
+	<div
+		id={ attrId("label", label.Id.String()) }
+		if label.Selected {
 			class="btn btn-secondary btn-xs"
-			title={ label.Description }
-		>
-			{ label.Name }
-			<div class="badge">{ print("%d", label.Count) }</div>
-		</button>
-	} else {
+		} else {
+			class="btn btn- btn-primary btn-xs"
+		}
+	>
 		<button
-			hx-get={ attrPath("/labels/select", label.Id.String()) }
+			if label.Selected {
+				hx-delete={ attrPath("/labels/select", label.Id.String()) }
+			} else {
+				hx-patch={ attrPath("/labels/select", label.Id.String()) }
+			}
 			hx-swap="outerHTML"
-			hx-target="this"
-			class="btn btn-primary btn-xs"
+			hx-target={ attrId("#label", label.Id.String()) }
 			title={ label.Description }
 		>
 			{ label.Name }
-			<div class="badge">{ print("%d", label.Count) }</div>
 		</button>
-	}
+		<div class="badge">{ print("%d", label.Count) }</div>
+		<button
+			hx-patch={ attrPath("/label/edit", label.Id.String()) }
+			hx-target="#details"
+			class="border-l-2 border-slate-500 pl-2"
+		>
+			?
+		</button>
+	</div>
 }
 
 templ labelNewButton() {
 	<button
 		hx-patch="/labels/new"
-		hx-target="this"
-		hx-swap="outerHTML"
+		hx-target="#details"
 		class="btn btn-primary btn-outline btn-xs m-4"
 	>
 		New
 	</button>
 }
 
-templ labelNewForm() {
+templ labelNewForm(parents []*label.LabelViewModel) {
 	<form
 		hx-post="/labels/new"
 		hx-target="this"
@@ -101,6 +121,11 @@ templ labelNewForm() {
 		class="grid grid-cols-1 gap-2 justify-between align-middle w-full m-4"
 		id="label-new-form"
 	>
+		<select class="select select-success w-full max-w-xs">
+			for _, parent := range parents {
+				<option value={ parent.Id.String() }>{ parent.Name }</option>
+			}
+		</select>
 		<input
 			name="name"
 			type="text"
@@ -116,8 +141,8 @@ templ labelNewForm() {
 		<button type="submit" class="btn btn-primary btn-outline btn-xs">Save</button>
 		<button
 			class="btn btn-primary btn-outline btn-xs"
-			hx-get="/labels/new"
-			hx-target="#label-new-form"
+			hx-get="/details/null"
+			hx-target="#details"
 		>
 			Cancel
 		</button>
@@ -149,34 +174,6 @@ templ labelDetailsView(label label.LabelViewModel) {
 			/>
 			<button type="submit" class="btn btn-outline btn-xs">Edit</button>
 			<button type="submit" class="btn btn-outline btn-xs">Cancel</button>
-		</form>
-	</div>
-}
-
-templ labelEditForm(label *label.LabelViewModel) {
-	<div id="file-title" class="w-full">
-		<form
-			hx-post="/labels/new"
-			hx-target="this"
-			hx-swap="outerHTML"
-			class="grid grid-cols-1 justify-between align-middle w-full"
-		>
-			<input name="id" type="hidden" value={ label.Id.String() }/>
-			<input
-				name="name"
-				type="text"
-				placeholder="Name goes here..."
-				class="input input-bordered flex-1"
-				value={ label.Name }
-			/>
-			<input
-				name="description"
-				type="text"
-				placeholder="Description goes here..."
-				class="input input-bordered flex-1"
-				value={ label.Description }
-			/>
-			<button type="submit" class="btn btn-outline btn-xs">Save</button>
 		</form>
 	</div>
 }

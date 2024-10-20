@@ -17,7 +17,7 @@ func (this *LabelManager) ResolveInit() error {
 	}
 
 	for _, label := range this.labelList {
-		label.Children = slicer.UniqFn(label2id, label.Children...)
+		label.Children = slicer.UniqFn(IdExtract, label.Children...)
 	}
 
 	for _, label := range this.labelList {
@@ -41,4 +41,25 @@ func (this *LabelManager) resolveUp(label *LabelViewModel) []*LabelViewModel {
 	}
 
 	return append([]*LabelViewModel{label}, this.resolveUp(label.Parent)...)
+}
+
+func (this *LabelManager) ResolveDown(id uuid.UUID) ([]*LabelViewModel, bool) {
+	var labels []*LabelViewModel
+	current := id
+
+	for {
+		label, ok := this.ById(current)
+
+		if !ok {
+			break
+		}
+
+		if label.Parent != nil && util.Ids.IsZero(label.Parent.Id) {
+			current = label.Parent.Id
+		} else {
+			break
+		}
+	}
+
+	return labels, len(labels) > 0
 }

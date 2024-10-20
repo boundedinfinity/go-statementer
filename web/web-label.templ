@@ -1,0 +1,59 @@
+package web
+
+import "github.com/boundedinfinity/statementer/label"
+
+templ labelEditButton(path string) {
+	<button
+		hx-patch={ path }
+		hx-target="#details"
+		class="btn btn-primary btn-outline btn-xs m-4"
+	>
+		Edit
+	</button>
+}
+
+templ labelEditForm(path string, label *label.LabelViewModel, parents []*label.LabelViewModel) {
+	<div id="file-title" class="w-full">
+		<form
+			hx-post={ path }
+			hx-target="this"
+			hx-swap="outerHTML"
+			class="grid grid-cols-1 justify-between align-middle w-full gap-4"
+		>
+			<input name="id" type="hidden" value={ label.Id.String() }/>
+			<div class="grid grid-cols-2 gap-2">
+				<label for="parent">Parent</label>
+				<select name="parent" class="select select-success w-full max-w-xs">
+					<option value="0">None</option>
+					for _, parent := range parents {
+						<option
+							if label.Parent != nil && label.Parent.Id == parent.Id {
+								selected
+							}
+							value={ parent.Id.String() }
+						>
+							{ parent.Name }
+						</option>
+					}
+				</select>
+				<label for="name">Name</label>
+				<input
+					name="name"
+					type="text"
+					placeholder="Name goes here..."
+					class="input input-bordered flex-grow"
+					value={ label.Name }
+				/>
+				<label for="description">Description</label>
+				<input
+					name="description"
+					type="text"
+					placeholder="Description goes here..."
+					class="input input-bordered flex-1"
+					value={ label.Description }
+				/>
+			</div>
+			<button type="submit" class="btn btn-outline btn-xs">Save</button>
+		</form>
+	</div>
+}
